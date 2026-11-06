@@ -274,7 +274,7 @@ export default function BatchTool({
     setZipping(true);
     try {
       const blob = await zipFiles(done.map((i) => ({ name: i.result!.filename, blob: i.result!.blob })));
-      saveBlob(blob, "fotowerkzeuge-bilder.zip");
+      saveBlob(blob, "fotofixer-bilder.zip");
       track("download", { kind: "zip", count: done.length });
     } finally {
       setZipping(false);

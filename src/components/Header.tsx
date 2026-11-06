@@ -26,7 +26,7 @@ export default function Header() {
           </span>
           <span className="flex flex-col leading-none">
             <span className="text-lg font-bold tracking-tight text-zinc-950">
-              Foto<span className="text-lime-700">Werkzeuge</span>
+              Foto<span className="text-lime-700">Fixer</span>
             </span>
             <span className="mt-1 hidden text-[11px] font-medium text-zinc-600 sm:block">
               Kostenlose Foto-Tools im Browser

@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     const base = (process.env.PLAUSIBLE_HOST ?? "https://plausible.io").replace(/\/$/, "");
     fetch(`${base}/api/event`, {
       method: "POST",
-      headers: { "content-type": "application/json", "user-agent": "FotoWerkzeuge-Events/1.0" },
+      headers: { "content-type": "application/json", "user-agent": "FotoFixer-Events/1.0" },
       body: JSON.stringify({ name: `tool_${event}`, url: `https://${domain}${path}`, domain, props }),
     }).catch(() => {});
   }

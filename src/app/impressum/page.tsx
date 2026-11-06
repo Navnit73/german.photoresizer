@@ -38,7 +38,7 @@ export default function ImpressumPage() {
             </div>
             <p className="text-zinc-800">
               {/* TODO (launch blocker, § 5 DDG): replace all placeholders with the operator's real data. */}
-              <strong>FotoWerkzeuge</strong><br />
+              <strong>FotoFixer</strong><br />
               Diensteanbieter / Betreiber der Website:<br />
               [Name des Betreibers / Firma]<br />
               [Straße und Hausnummer]<br />
@@ -50,8 +50,8 @@ export default function ImpressumPage() {
                 <Mail className="h-4 w-4 text-lime-700" /> Kontakt
               </div>
               <p>
-                E-Mail: <span className="font-mono text-lime-800 font-semibold">kontakt@fotowerkzeuge.online</span><br />
-                Website: <span className="font-mono">https://fotowerkzeuge.online</span>
+                E-Mail: <span className="font-mono text-lime-800 font-semibold">kontakt@fotofixer.de</span><br />
+                Website: <span className="font-mono">https://www.fotofixer.de</span>
               </p>
             </div>
           </section>

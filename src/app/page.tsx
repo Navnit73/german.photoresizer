@@ -62,7 +62,7 @@ export default function HomePage() {
         data={graph(
           websiteSchema(),
           organizationSchema(),
-          webApplicationSchema("FotoWerkzeuge Foto-Editor", "/", DESCRIPTION),
+          webApplicationSchema("FotoFixer Foto-Editor", "/", DESCRIPTION),
           itemListSchema(LIVE_TOOLS),
           faqSchema(FAQS, "/"),
         )}

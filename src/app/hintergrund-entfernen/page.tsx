@@ -15,7 +15,7 @@ export const metadata: Metadata = buildMetadata({ title: TITLE, description: DES
 const FAQS: FaqItem[] = [
   {
     q: "Wie entferne ich den Hintergrund eines Bildes?",
-    a: "Laden Sie das Foto in das Tool und wählen Sie das passende KI-Modell: „Personen & Porträts“ oder „Produkte & Objekte“. Die KI erkennt das Hauptmotiv und entfernt den Hintergrund automatisch. Kleine Fehler korrigieren Sie mit dem Radierer oder dem Wiederherstellen-Pinsel, danach speichern Sie das Ergebnis als PNG, WebP oder JPG.",
+    a: "Laden Sie das Foto in das Tool. Die KI (ISNet) erkennt das Hauptmotiv – egal ob Porträt, Tier oder Produkt – und entfernt den Hintergrund automatisch. Kleine Fehler korrigieren Sie bei Bedarf mit dem Radierer oder dem Wiederherstellen-Pinsel, danach speichern Sie das Ergebnis als PNG, WebP oder JPG.",
   },
   {
     q: "In welchem Format wird das Bild ohne Hintergrund gespeichert?",
@@ -82,8 +82,7 @@ export default function Page() {
             title: "KI entfernt den Hintergrund automatisch",
             body: (
               <p>
-                Wählen Sie „Personen &amp; Porträts“ oder „Produkte &amp; Objekte“. Das Modell trennt Motiv und
-                Hintergrund – je nach Gerät in wenigen Sekunden bis etwa einer Minute.
+                Die KI trennt Motiv und Hintergrund automatisch mit dem hochpräzisen ISNet-Modell – je nach Gerät in wenigen Sekunden.
               </p>
             ),
           },
@@ -99,11 +98,10 @@ export default function Page() {
         ]}
       />
       <p>
-        Die beiden Modelle unterscheiden sich in Größe und Schwerpunkt. „Personen &amp; Porträts“ nutzt MODNet, ein auf
-        Menschen spezialisiertes Modell mit rund 13 MB Download. „Produkte &amp; Objekte“ nutzt BiRefNet lite, das
-        beliebige Motive erkennt, aber etwa 115 MB groß ist. Beide werden einmalig geladen und danach vom Browser
-        zwischengespeichert. Unterstützt Ihr Browser WebGPU, rechnet die Grafikkarte mit; andernfalls läuft das Modell
-        über WebAssembly auf dem Prozessor.
+        Das Werkzeug nutzt das hochpräzise ISNet-Modell (von IMG.LY), das auf Dichotomous Image Segmentation (DIS) basiert
+        und Personen, Haare, Tiere, Produkte und komplexe Objekte gleichermaßen meistert. Das Modell wird beim ersten Einsatz
+        automatisch heruntergeladen und im Browser zwischengespeichert. Unterstützt Ihr Gerät WebGPU, erfolgt die Berechnung
+        beschleunigt über Ihre Grafikkarte; andernfalls läuft sie über WebAssembly auf dem Prozessor.
       </p>
 
       <h2>Feinarbeit: Kanten und Details korrigieren</h2>
@@ -129,7 +127,7 @@ export default function Page() {
       <h3>Produktfotos für Onlineshops</h3>
       <p>
         Viele Marktplätze und Shopsysteme bevorzugen Produktbilder vor einheitlichem, hellem Hintergrund. Entfernen Sie
-        den Hintergrund mit dem Modell „Produkte &amp; Objekte“ und wählen Sie anschließend Weiß als neue Farbe. Prüfen Sie
+        den Hintergrund einfach per KI und wählen Sie anschließend Weiß als neue Farbe. Prüfen Sie
         dabei die aktuellen Bildrichtlinien Ihrer Plattform. Wenn Sie nur bestimmte Teile eines Produkts genau auswählen
         möchten, ist <ToolLink id="P41">Bild freistellen</ToolLink> mit Lasso und Pinsel die passendere Wahl.
       </p>
@@ -169,7 +167,7 @@ export default function Page() {
           "KI läuft lokal – Ihr Foto wird nicht hochgeladen oder gespeichert",
           "Kostenlos, ohne Anmeldung, ohne Wasserzeichen",
           "Export in Originalauflösung als PNG, WebP oder JPG",
-          "Zwei Modelle: Personen & Porträts oder Produkte & Objekte",
+          "Hochpräzises ISNet-Modell für Personen, Produkte & beliebige Motive",
         ]}
       />
       <Note>

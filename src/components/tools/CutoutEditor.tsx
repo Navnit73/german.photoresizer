@@ -14,7 +14,6 @@ import {
   Pentagon,
   Sparkles,
   Undo2,
-  Wand2,
   Hand,
   ZoomIn,
   ZoomOut,
@@ -22,7 +21,7 @@ import {
 } from "lucide-react";
 import { useSingleImage, type LoadedImage } from "./useSingleImage";
 import { Dropzone, ErrorBanner, Panel, Segmented, Slider, Toggle, btnIcon, btnPrimary, btnSecondary } from "./ui";
-import { MODELS, segment, type SegmentModel } from "@/lib/image/segment";
+import { segment } from "@/lib/image/segment";
 import { blurMask, isMaskEmpty, maskBounds, maskFromCanvasAlpha, maskToImageData } from "@/lib/image/mask";
 import { canvasToBlob } from "@/lib/image/canvas";
 import { encodePixels } from "@/lib/image/encode";
@@ -69,7 +68,7 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
     "Bitte wählen Sie ein Bild im Format JPG, PNG oder WebP.",
   );
 
-  const [phase, setPhase] = useState<"pick" | "segmenting" | "edit">(variant === "auto" ? "pick" : "edit");
+  const [phase, setPhase] = useState<"segmenting" | "edit">(variant === "auto" ? "segmenting" : "edit");
   const [aiProgress, setAiProgress] = useState<number | null>(null);
   const [aiStage, setAiStage] = useState<"download" | "analyse">("download");
   const [tool, setTool] = useState<Tool>(variant === "auto" ? "brush" : "lasso");
@@ -131,10 +130,11 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
     };
   }, [image]);
 
+  const autoRan = useRef<LoadedImage | null>(null);
   const [seen, setSeen] = useState<LoadedImage | null>(null);
   if (image !== seen) {
     setSeen(image);
-    setPhase(variant === "auto" ? "pick" : "edit");
+    setPhase(variant === "auto" ? "segmenting" : "edit");
     setPoly([]);
     setLastSize(null);
     setAiProgress(null);
@@ -267,21 +267,21 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
 
   /* ------------------------------- edits ------------------------------ */
 
-  const snapshot = () => {
+  const snapshot = useCallback(() => {
     if (!work) return;
     const m = work.mask;
     const alpha = maskFromCanvasAlpha(m.getContext("2d", { willReadFrequently: true })!.getImageData(0, 0, m.width, m.height).data);
     work.undo.push(alpha);
     if (work.undo.length > UNDO_MAX) work.undo.shift();
     setUndoCount(work.undo.length);
-  };
+  }, [work]);
 
-  const afterEdit = () => {
+  const afterEdit = useCallback(() => {
     const m = work?.mask;
     if (m) setMaskEmpty(isMaskEmpty(maskFromCanvasAlpha(m.getContext("2d", { willReadFrequently: true })!.getImageData(0, 0, m.width, m.height).data)));
     refreshEffective();
     render();
-  };
+  }, [work, refreshEffective, render]);
 
   const undo = () => {
     if (!work) return;
@@ -495,7 +495,7 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
 
   /* -------------------------------- AI -------------------------------- */
 
-  const runAi = async (model: SegmentModel) => {
+  const runAi = useCallback(async () => {
     if (!work) return;
     const wi = work.img;
     const m = work.mask;
@@ -504,9 +504,11 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
     setAiStage("download");
     setAiProgress(null);
     try {
-      const alpha = await segment(wi, model, (p) => {
-        setAiProgress(p.ratio);
-        if (p.ratio !== null && p.ratio >= 0.999) setAiStage("analyse");
+      const alpha = await segment(wi, (p) => {
+        if (p.stage) setAiStage(p.stage);
+        if (p.ratio !== null) {
+          setAiProgress(p.ratio);
+        }
       });
       setAiStage("analyse");
       if (variant === "manual") snapshot();
@@ -526,11 +528,18 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
           ? "Das KI-Modell konnte nicht geladen werden. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
           : "Die KI-Verarbeitung ist in diesem Browser fehlgeschlagen. Bitte versuchen Sie es mit einem aktuellen Chrome, Edge, Firefox oder Safari erneut.",
       );
-      setPhase(variant === "auto" ? "pick" : "edit");
+      setPhase("edit");
     } finally {
       setAiProgress(null);
     }
-  };
+  }, [work, variant, snapshot, afterEdit, setError]);
+
+  useEffect(() => {
+    if (variant === "auto" && image && work && autoRan.current !== image) {
+      autoRan.current = image;
+      runAi();
+    }
+  }, [variant, image, work, runAi]);
 
   /* ------------------------------ export ------------------------------ */
 
@@ -661,25 +670,6 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
     );
   }
 
-  const modelPicker = (
-    <div className="grid gap-2 sm:grid-cols-2">
-      {(Object.keys(MODELS) as SegmentModel[]).map((m) => (
-        <button
-          key={m}
-          type="button"
-          onClick={() => runAi(m)}
-          className="flex min-h-20 flex-col items-start rounded-xl border border-zinc-200 bg-white p-4 text-left transition-colors hover:border-lime-700 hover:bg-lime-50/50"
-        >
-          <span className="flex items-center gap-2 text-sm font-semibold text-zinc-950">
-            <Sparkles aria-hidden className="h-4 w-4 text-lime-700" /> {MODELS[m].label}
-          </span>
-          <span className="mt-1 text-xs text-zinc-600">
-            {MODELS[m].hint} · einmaliger Download {MODELS[m].size}
-          </span>
-        </button>
-      ))}
-    </div>
-  );
 
   const panning = tool === "pan" || spaceDown;
   const cursorStyle =
@@ -819,26 +809,24 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
                       </button>
                     </div>
                   )}
-                  {phase !== "edit" && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-white/75 p-4 backdrop-blur-sm">
-                      {phase === "pick" ? (
-                        <div className="w-full max-w-lg">
-                          <p className="mb-3 text-center text-sm font-semibold text-zinc-900">Was ist auf dem Foto?</p>
-                          {modelPicker}
-                          <p className="mt-3 text-center text-xs text-zinc-600">Das Modell wird einmalig geladen und im Browser gespeichert. Ihr Foto verlässt Ihr Gerät nicht.</p>
-                        </div>
-                      ) : (
-                        <div className="w-full max-w-xs text-center" role="status" aria-live="polite">
-                          <Loader2 aria-hidden className="mx-auto h-8 w-8 animate-spin text-lime-700" />
-                          <p className="mt-3 text-sm font-semibold text-zinc-900">{aiStage === "download" ? "KI-Modell wird geladen …" : "Motiv wird erkannt …"}</p>
-                          {aiStage === "download" && aiProgress !== null && (
-                            <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-200">
-                              <div className="h-full bg-lime-700 transition-[width]" style={{ width: `${Math.round(aiProgress * 100)}%` }} />
-                            </div>
-                          )}
-                          <p className="mt-2 text-xs text-zinc-600">Je nach Gerät dauert das einige Sekunden bis etwa eine Minute.</p>
-                        </div>
-                      )}
+                  {phase === "segmenting" && (
+                    <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/80 p-4 backdrop-blur-sm">
+                      <div className="w-full max-w-xs text-center" role="status" aria-live="polite">
+                        <Loader2 aria-hidden className="mx-auto h-8 w-8 animate-spin text-lime-700" />
+                        <p className="mt-3 text-sm font-semibold text-zinc-900">
+                          {aiStage === "download" ? "ISNet KI-Modell wird geladen …" : "Motiv wird erkannt …"}
+                        </p>
+                        {aiStage === "download" && aiProgress !== null && (
+                          <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-200">
+                            <div className="h-full bg-lime-700 transition-[width]" style={{ width: `${Math.round(aiProgress * 100)}%` }} />
+                          </div>
+                        )}
+                        <p className="mt-2 text-xs text-zinc-600">
+                          {aiStage === "download"
+                            ? "Einmaliger Download im Browser. Ihr Foto verlässt das Gerät nicht."
+                            : "Berechnung läuft lokal auf Ihrem Gerät."}
+                        </p>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -859,9 +847,26 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
         <aside className="space-y-3 lg:sticky lg:top-20 lg:self-start">
           {variant === "manual" && phase === "edit" && (
             <Panel title="KI-Vorauswahl">
-              <p className="text-xs leading-snug text-zinc-600">Erkennt das Hauptmotiv automatisch. Danach mit Lasso oder Pinsel anpassen.</p>
-              {modelPicker}
+              <p className="text-xs leading-snug text-zinc-600">
+                Erkennt das Hauptmotiv automatisch per ISNet-KI. Danach mit Lasso oder Pinsel anpassen.
+              </p>
+              <button
+                type="button"
+                onClick={() => runAi()}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-lime-700 bg-lime-50/80 p-3 text-sm font-semibold text-lime-900 transition-colors hover:bg-lime-100"
+              >
+                <Sparkles aria-hidden className="h-4 w-4 text-lime-700" /> Motiv mit KI erkennen
+              </button>
             </Panel>
+          )}
+          {variant === "auto" && phase === "edit" && (
+            <button
+              type="button"
+              onClick={() => runAi()}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white p-2.5 text-xs font-semibold text-zinc-700 transition-colors hover:border-lime-700 hover:bg-lime-50/50"
+            >
+              <Sparkles aria-hidden className="h-3.5 w-3.5 text-lime-700" /> Freistellung per KI neu berechnen
+            </button>
           )}
           {phase === "edit" && (
             <Panel title="Feinarbeit">
@@ -933,8 +938,8 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
               )}
               {lastSize !== null && <p className="text-center text-xs text-zinc-600">Gespeichert: {formatBytes(lastSize)} · volle Auflösung</p>}
               {variant === "auto" && (
-                <button type="button" className={`${btnSecondary} w-full`} onClick={() => setPhase("pick")}>
-                  <Wand2 aria-hidden className="h-4 w-4" /> KI erneut anwenden
+                <button type="button" className={`${btnSecondary} w-full`} onClick={() => runAi()}>
+                  <Sparkles aria-hidden className="h-4 w-4" /> KI erneut anwenden
                 </button>
               )}
             </div>
@@ -942,9 +947,9 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
           {phase !== "edit" && (
             <Panel title="So funktioniert es">
               <ol className="list-decimal space-y-1.5 pl-4 text-sm text-zinc-700">
-                <li>Motivtyp wählen – das passende KI-Modell wird geladen.</li>
-                <li>Die KI trennt Motiv und Hintergrund lokal in Ihrem Browser.</li>
-                <li>Kanten mit dem Pinsel korrigieren und speichern.</li>
+                <li>Das hochpräzise ISNet-Modell trennt Motiv und Hintergrund automatisch.</li>
+                <li>Die Berechnung läuft lokal in Ihrem Browser (WebGPU / WASM).</li>
+                <li>Kanten verfeinern und als transparentes PNG oder mit neuer Farbe speichern.</li>
               </ol>
               <button type="button" className={`${btnSecondary} w-full`} onClick={reset}>
                 <ImagePlus aria-hidden className="h-4 w-4" /> Anderes Bild wählen

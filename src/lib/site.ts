@@ -1,10 +1,9 @@
 /**
- * Site-wide constants. Brand and domain are still placeholders from the first
- * implementation (see docs/audit/2026-11-06-audit-and-plan.md, L3) – change
- * them here only.
+ * Site-wide constants.
+ * Official production domain and brand for FotoFixer.
  */
-export const SITE_URL = "https://fotowerkzeuge.online";
-export const SITE_NAME = "FotoWerkzeuge";
+export const SITE_URL = "https://www.fotofixer.de";
+export const SITE_NAME = "FotoFixer";
 export const SITE_TAGLINE = "Kostenlose Foto-Tools im Browser";
 export const SITE_LOCALE = "de_DE";
 export const MAX_TITLE_LENGTH = 60;

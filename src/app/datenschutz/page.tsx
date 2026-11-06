@@ -42,7 +42,7 @@ export default function DatenschutzPage() {
           <h2>1. Verantwortlicher</h2>
           <p>Verantwortlicher im Sinne von Art. 4 Nr. 7 DSGVO und Art. 5 lit. j revDSG ist der im <Link href="/impressum/">Impressum</Link> genannte Betreiber dieser Website.</p>
           <p>
-            E-Mail: <code>kontakt@fotowerkzeuge.online</code>
+            E-Mail: <code>kontakt@fotofixer.de</code>
           </p>
 
           <h2>2. Bildverarbeitung im Browser</h2>
@@ -75,10 +75,9 @@ export default function DatenschutzPage() {
 
           <h2>4. KI-Werkzeuge: Modelle und Laufzeitbibliotheken</h2>
           <p>
-            Die Werkzeuge „Hintergrund entfernen“ und „Bild freistellen“ nutzen KI-Modelle (MODNet bzw. BiRefNet lite), die lokal in Ihrem
-            Browser ausgeführt werden. Ihr Foto wird dabei <strong>nicht</strong> übertragen. Die dafür nötigen Modelldateien und die
-            WebAssembly-Laufzeit (ONNX Runtime Web) werden – ebenso wie der HEIC-Decoder des Werkzeugs „HEIC in JPG umwandeln“ – ausschließlich
-            von unserem eigenen Server ausgeliefert. Es findet dabei keine Verbindung zu Drittanbietern statt.
+            Die Werkzeuge „Hintergrund entfernen“ und „Bild freistellen“ nutzen das ISNet-KI-Modell von IMG.LY, das lokal in Ihrem
+            Browser ausgeführt wird. Ihr Foto wird dabei <strong>nicht</strong> übertragen. Die Modelldateien und die
+            WebAssembly-Laufzeit werden clientseitig im Browser zwischengespeichert und ausschließlich lokal auf Ihrem Gerät berechnet.
           </p>
           <p>
             Die Modelldateien werden erst geladen, wenn Sie in einem KI-Werkzeug aktiv ein Modell auswählen. Ihr Browser speichert sie

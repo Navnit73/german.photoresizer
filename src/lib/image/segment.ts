@@ -1,115 +1,129 @@
 /**
- * Local AI background segmentation via transformers.js (ONNX Runtime Web).
- * The photo never leaves the device. Everything is self-hosted – no
- * third-party requests:
- *  - model files: /models/<id>/… (public/models, see scripts/fetch-ai-assets.mjs)
- *    or NEXT_PUBLIC_MODEL_HOST (your own CDN/bucket, same folder layout)
- *  - ONNX Runtime WASM: /vendor/ort/ (public/vendor/ort)
- * Files are cached by the browser after the first use.
+ * Local AI background removal via @imgly/background-removal (ISNet model).
+ *
+ * Runs client-side in the browser using WebAssembly / WebGPU. The photo never
+ * leaves the device. The ISNet ONNX model is automatically downloaded by the
+ * library on first run and cached by the browser for subsequent runs.
  */
 
-export type SegmentModel = "portrait" | "object";
+export type SegmentModel = "isnet";
 
 export const MODELS: Record<SegmentModel, { id: string; label: string; size: string; hint: string }> = {
-  portrait: { id: "Xenova/modnet", label: "Personen & Porträts", size: "≈ 13 MB", hint: "Schnell, optimiert für Menschen" },
-  object: { id: "onnx-community/BiRefNet_lite-ONNX", label: "Produkte & Objekte", size: "≈ 115 MB", hint: "Präzise für alle Motive" },
+  isnet: {
+    id: "isnet_fp16",
+    label: "ISNet (IMG.LY)",
+    size: "≈ 84 MB",
+    hint: "Präzises KI-Modell für Personen, Produkte und beliebige Motive",
+  },
 };
-
-type Segmenter = (input: unknown) => Promise<{ data: Uint8ClampedArray | Uint8Array; width: number; height: number; channels: number }>;
-
-const cache = new Map<SegmentModel, Promise<Segmenter>>();
 
 export interface LoadProgress {
   /** 0–1, or null when unknown */
   ratio: number | null;
   loadedBytes: number;
+  totalBytes?: number;
+  stage?: "download" | "analyse";
 }
 
-async function hasWebGPU(): Promise<boolean> {
-  const gpu = (navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } }).gpu;
-  if (!gpu) return false;
+/** Set once WebGPU fails in this session – everything then falls back to CPU/WASM. */
+let forceCpu = false;
+
+async function hasWebGpu(): Promise<boolean> {
+  if (typeof navigator === "undefined") return false;
+  const nav = navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } };
+  if (!nav.gpu) return false;
   try {
-    return !!(await gpu.requestAdapter());
+    const adapter = await nav.gpu.requestAdapter();
+    return !!adapter;
   } catch {
     return false;
   }
 }
 
-export function loadSegmenter(model: SegmentModel, onProgress?: (p: LoadProgress) => void): Promise<Segmenter> {
-  const existing = cache.get(model);
-  if (existing) return existing;
-  const p = (async () => {
-    const tf = await import("@huggingface/transformers");
-    const host = process.env.NEXT_PUBLIC_MODEL_HOST;
-    if (host) {
-      // Own CDN with the same layout as public/models: <host>/<model id>/<file>
-      tf.env.allowLocalModels = false;
-      tf.env.allowRemoteModels = true;
-      tf.env.remoteHost = host.endsWith("/") ? host : `${host}/`;
-      tf.env.remotePathTemplate = "{model}/";
-    } else {
-      tf.env.allowLocalModels = true;
-      tf.env.allowRemoteModels = false; // never fall back to huggingface.co
-      tf.env.localModelPath = "/models/";
-    }
-    const onnx = tf.env.backends.onnx as { wasm?: { wasmPaths?: string } };
-    if (onnx.wasm) onnx.wasm.wasmPaths = "/vendor/ort/";
-    const device = (await hasWebGPU()) ? "webgpu" : "wasm";
-    const files = new Map<string, { loaded: number; total: number }>();
-    const pipe = await tf.pipeline("background-removal", MODELS[model].id, {
-      device,
-      dtype: "fp16",
-      progress_callback: (e: { status: string; file?: string; loaded?: number; total?: number }) => {
-        if (e.status !== "progress" || !e.file) return;
-        files.set(e.file, { loaded: e.loaded ?? 0, total: e.total ?? 0 });
-        let loaded = 0;
-        let total = 0;
-        files.forEach((f) => {
-          loaded += f.loaded;
-          total += f.total;
-        });
-        onProgress?.({ ratio: total > 0 ? loaded / total : null, loadedBytes: loaded });
-      },
-    });
-    return pipe as unknown as Segmenter;
-  })();
-  cache.set(model, p);
-  p.catch(() => cache.delete(model));
-  return p;
-}
-
 /**
- * Returns an alpha mask (0–255, one byte per pixel) at the canvas size.
+ * Runs client-side ISNet background segmentation on the provided canvas.
+ * Returns an alpha mask (0–255, one byte per pixel) matching the canvas dimensions.
  */
-export async function segment(canvas: HTMLCanvasElement, model: SegmentModel, onProgress?: (p: LoadProgress) => void): Promise<Uint8ClampedArray> {
-  const segmenter = await loadSegmenter(model, onProgress);
-  const { RawImage } = await import("@huggingface/transformers");
-  const input = RawImage.fromCanvas(canvas);
-  const out = await segmenter(input);
-  const n = canvas.width * canvas.height;
-  const mask = new Uint8ClampedArray(n);
-  if (out.width === canvas.width && out.height === canvas.height && out.channels === 4) {
-    for (let i = 0; i < n; i++) mask[i] = out.data[i * 4 + 3];
-    return mask;
+export async function segment(
+  canvas: HTMLCanvasElement,
+  onProgressOrModel?: SegmentModel | ((p: LoadProgress) => void),
+  onProgress?: (p: LoadProgress) => void,
+): Promise<Uint8ClampedArray> {
+  const cb = typeof onProgressOrModel === "function" ? onProgressOrModel : onProgress;
+
+  // 1. Convert canvas to PNG blob
+  const inputBlob = await new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Konnte Bilddaten nicht für die KI vorbereiten."))), "image/png");
+  });
+
+  // 2. Dynamically import @imgly/background-removal (ensures client-only execution)
+  const { removeBackground } = await import("@imgly/background-removal");
+
+  const canGpu = !forceCpu && (await hasWebGpu());
+  const publicPath = process.env.NEXT_PUBLIC_MODEL_HOST || undefined;
+
+  const buildConfig = (device: "gpu" | "cpu") => ({
+    model: "isnet_fp16" as const,
+    device,
+    publicPath,
+    progress: (key: string, current: number, total: number) => {
+      if (!cb) return;
+      if (key.startsWith("fetch:")) {
+        const ratio = total > 0 ? Math.min(1, current / total) : null;
+        cb({ ratio, loadedBytes: current, totalBytes: total, stage: "download" });
+      } else if (key.startsWith("compute:")) {
+        cb({ ratio: 1, loadedBytes: total, totalBytes: total, stage: "analyse" });
+      }
+    },
+  });
+
+  // 3. Run background removal with GPU -> CPU fallback
+  let outBlob: Blob;
+  try {
+    outBlob = await removeBackground(inputBlob, buildConfig(canGpu ? "gpu" : "cpu"));
+  } catch (err) {
+    if (canGpu && !forceCpu) {
+      console.warn("[segment] WebGPU inference failed, retrying on CPU/WASM", err);
+      forceCpu = true;
+      outBlob = await removeBackground(inputBlob, buildConfig("cpu"));
+    } else {
+      throw err;
+    }
   }
-  // Unexpected output size: resample the alpha channel.
-  const alpha = new Uint8ClampedArray(out.width * out.height * 4);
-  for (let i = 0; i < out.width * out.height; i++) {
-    const a = out.channels === 4 ? out.data[i * 4 + 3] : out.data[i * out.channels];
-    alpha[i * 4] = alpha[i * 4 + 1] = alpha[i * 4 + 2] = 255;
-    alpha[i * 4 + 3] = a;
+
+  // 4. Extract alpha channel mask from the resulting cutout
+  const outCanvas = document.createElement("canvas");
+  outCanvas.width = canvas.width;
+  outCanvas.height = canvas.height;
+  const ctx = outCanvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new Error("2D-Canvas-Kontext nicht verfügbar.");
+
+  if (typeof createImageBitmap === "function") {
+    const bitmap = await createImageBitmap(outBlob);
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+  } else {
+    await new Promise<void>((resolve, reject) => {
+      const url = URL.createObjectURL(outBlob);
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        resolve();
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("Ergebnisbild konnte nicht geladen werden."));
+      };
+      img.src = url;
+    });
   }
-  const tmp = document.createElement("canvas");
-  tmp.width = out.width;
-  tmp.height = out.height;
-  tmp.getContext("2d")!.putImageData(new ImageData(alpha, out.width, out.height), 0, 0);
-  const dst = document.createElement("canvas");
-  dst.width = canvas.width;
-  dst.height = canvas.height;
-  const dctx = dst.getContext("2d", { willReadFrequently: true })!;
-  dctx.imageSmoothingQuality = "high";
-  dctx.drawImage(tmp, 0, 0, dst.width, dst.height);
-  const d = dctx.getImageData(0, 0, dst.width, dst.height).data;
-  for (let i = 0; i < n; i++) mask[i] = d[i * 4 + 3];
+
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const total = canvas.width * canvas.height;
+  const mask = new Uint8ClampedArray(total);
+  for (let i = 0; i < total; i++) {
+    mask[i] = imgData.data[i * 4 + 3];
+  }
   return mask;
 }

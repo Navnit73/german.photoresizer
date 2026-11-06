@@ -18,7 +18,7 @@ export default function Footer() {
                 <ImageIcon aria-hidden className="h-4 w-4" />
               </span>
               <span className="text-lg font-bold tracking-tight text-zinc-950">
-                Foto<span className="text-lime-700">Werkzeuge</span>
+                Foto<span className="text-lime-700">Fixer</span>
               </span>
             </Link>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-zinc-600">

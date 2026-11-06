@@ -8,7 +8,7 @@ import { breadcrumbSchema, buildMetadata, graph, organizationSchema } from "@/li
 
 const TITLE = "Über uns – so funktionieren unsere Foto-Tools";
 const DESCRIPTION =
-  "Wer hinter FotoWerkzeuge steht, wie die Foto-Tools technisch arbeiten, warum Ihre Bilder Ihr Gerät nicht verlassen und welche Open-Source-Bausteine wir nutzen.";
+  "Wer hinter FotoFixer steht, wie die Foto-Tools technisch arbeiten, warum Ihre Bilder Ihr Gerät nicht verlassen und welche Open-Source-Bausteine wir nutzen.";
 const PATH = "/ueber-uns/";
 
 export const metadata: Metadata = buildMetadata({ title: TITLE, description: DESCRIPTION, path: PATH });
@@ -22,10 +22,9 @@ const CREDITS: { name: string; use: string; license: string; url: string }[] = [
   { name: "gifuct-js", use: "GIF-Dekodierung", license: "MIT", url: "https://github.com/matt-way/gifuct-js" },
   { name: "gifenc", use: "GIF-Kodierung und Farbpaletten", license: "MIT", url: "https://github.com/mattdesl/gifenc" },
   { name: "fflate", use: "ZIP-Archive", license: "MIT", url: "https://github.com/101arrowz/fflate" },
-  { name: "Transformers.js", use: "Ausführung der KI-Modelle", license: "Apache-2.0", url: "https://github.com/huggingface/transformers.js" },
+  { name: "@imgly/background-removal", use: "Clientseitige Hintergrundentfernung (ISNet)", license: "AGPL-3.0", url: "https://github.com/imgly/background-removal-js" },
   { name: "ONNX Runtime Web", use: "KI-Laufzeit (WebAssembly/WebGPU)", license: "MIT", url: "https://github.com/microsoft/onnxruntime" },
-  { name: "MODNet", use: "KI-Modell „Personen & Porträts“", license: "Apache-2.0", url: "https://github.com/ZHKKKe/MODNet" },
-  { name: "BiRefNet lite", use: "KI-Modell „Produkte & Objekte“", license: "MIT", url: "https://github.com/ZhengPeng7/BiRefNet" },
+  { name: "ISNet (DIS)", use: "KI-Modell für Hintergrund-Segmentierung", license: "MIT", url: "https://github.com/xuebinqin/DIS" },
   { name: "Next.js, React", use: "Website-Grundlage", license: "MIT", url: "https://nextjs.org" },
   { name: "Lucide", use: "Symbole", license: "ISC", url: "https://lucide.dev" },
 ];
@@ -78,8 +77,7 @@ export default function AboutPage() {
           </p>
           <h3>KI lokal im Browser</h3>
           <p>
-            Für das Entfernen von Hintergründen stehen zwei frei lizenzierte Modelle zur Wahl: MODNet für Personen und BiRefNet lite für Produkte
-            und Objekte. Sie laufen über ONNX Runtime Web – mit Grafikkarten-Beschleunigung (WebGPU), wenn Ihr Browser das unterstützt.
+            Für das Entfernen von Hintergründen setzen wir auf das hochpräzise ISNet-Modell (über @imgly/background-removal). Es läuft vollständig clientseitig im Browser über WebAssembly und WebGPU, lädt sich automatisch beim ersten Einsatz herunter und speichert sich lokal im Browser-Cache.
           </p>
           <h3>Grenzen, die wir offen nennen</h3>
           <p>
@@ -137,7 +135,7 @@ export default function AboutPage() {
 
           <h2>Kontakt</h2>
           <p>
-            Fragen, Fehlerhinweise oder Verbesserungsvorschläge? Schreiben Sie uns an <code>kontakt@fotowerkzeuge.online</code>. Die vollständigen
+            Fragen, Fehlerhinweise oder Verbesserungsvorschläge? Schreiben Sie uns an <code>kontakt@fotofixer.de</code>. Die vollständigen
             Anbieterangaben finden Sie im <Link href="/impressum/">Impressum</Link>, Informationen zum Datenschutz in der{" "}
             <Link href="/datenschutz/">Datenschutzerklärung</Link>.
           </p>
