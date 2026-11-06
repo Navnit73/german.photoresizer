@@ -41,7 +41,7 @@ export default function ToolSearch({ tools }: { tools: SearchTool[] }) {
         aria-controls={`${id}-list`}
         aria-autocomplete="list"
         autoComplete="off"
-        placeholder="Was möchten Sie tun? z. B. „verkleinern“ oder „HEIC“"
+        placeholder="Was möchten Sie tun? z. B. „HEIC“"
         value={q}
         onChange={(e) => {
           setQ(e.target.value);

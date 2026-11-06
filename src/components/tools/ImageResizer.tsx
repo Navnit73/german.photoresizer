@@ -1,9 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Link2, Link2Off } from "lucide-react";
 import BatchTool, { type SourceInfo } from "./BatchTool";
-import { NumberField, Panel, Segmented, Slider, Toggle } from "./ui";
+import { DimensionFields, NumberField, Panel, Segmented, Slider, Toggle } from "./ui";
 import { encodeCanvas, finishBlob, outputName, renderDecoded, sourceFormat } from "@/lib/image/pipeline";
 import { encodeToTargetSize, readPixels, type OutputFormat } from "@/lib/image/encode";
 import { fitLongEdge } from "@/lib/image/resize";
@@ -19,6 +18,7 @@ export default function ImageResizer() {
   const [width, setWidth] = useState(1200);
   const [height, setHeight] = useState(800);
   const [lock, setLock] = useState(true);
+  const [lockBy, setLockBy] = useState<"width" | "height">("width");
   const [format, setFormat] = useState<"keep" | OutputFormat>("keep");
   const [target, setTarget] = useState(500);
   const [unit, setUnit] = useState<"KB" | "MB">("KB");
@@ -57,7 +57,10 @@ export default function ImageResizer() {
         w = Math.round((ow * percent) / 100);
         h = Math.round((oh * percent) / 100);
       } else if (sizing === "custom") {
-        if (lock) {
+        if (lock && lockBy === "height") {
+          h = height;
+          w = Math.round((height * ow) / oh);
+        } else if (lock) {
           w = width;
           h = Math.round((width * oh) / ow);
         } else {
@@ -73,7 +76,7 @@ export default function ImageResizer() {
       const data = await encodeCanvas(renderDecoded(dec, w, h), { format: outFormat, quality: 82, pngMode: "lossless" });
       return { blob: finishBlob(data, outFormat, exif, meta), width: w, height: h, filename: outputName(src.name, outFormat) };
     },
-    [mode, sizing, percent, width, height, lock, format, target, unit, targetFormat, stripMeta],
+    [mode, sizing, percent, width, height, lock, lockBy, format, target, unit, targetFormat, stripMeta],
   );
 
   return (
@@ -84,7 +87,7 @@ export default function ImageResizer() {
       dropTitle="Bilder zum Verkleinern hier ablegen"
       dropFormats="JPG, PNG, WebP, GIF, HEIC · bis zu 50 Dateien"
       previewAlt="Bild verkleinern – Vorschau des verkleinerten Fotos"
-      settingsKey={JSON.stringify([mode, sizing, percent, width, height, lock, format, target, unit, targetFormat, stripMeta])}
+      settingsKey={JSON.stringify([mode, sizing, percent, width, height, lock, lockBy, format, target, unit, targetFormat, stripMeta])}
       process={process}
       gpsWarning={!stripMeta}
       settings={
@@ -118,30 +121,22 @@ export default function ImageResizer() {
               )}
               {sizing === "percent" && <Slider label="Skalierung" value={percent} min={5} max={100} onChange={setPercent} display={`${percent} %`} />}
               {sizing === "custom" && (
-                <div className="flex items-end gap-2">
-                  <div className="flex-1">
-                    <NumberField label="Breite" suffix="px" value={width} onChange={setWidth} />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setLock(!lock)}
-                    aria-pressed={lock}
-                    aria-label={lock ? "Seitenverhältnis gesperrt" : "Seitenverhältnis frei"}
-                    className={`mb-0 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${lock ? "border-lime-700 bg-lime-50 text-lime-800" : "border-zinc-300 text-zinc-600"}`}
-                  >
-                    {lock ? <Link2 aria-hidden className="h-4 w-4" /> : <Link2Off aria-hidden className="h-4 w-4" />}
-                  </button>
-                  <div className="flex-1">
-                    {lock ? (
-                      <div>
-                        <p className="mb-1 text-xs font-medium text-zinc-700">Höhe</p>
-                        <p className="flex h-11 items-center rounded-xl border border-dashed border-zinc-300 px-3 text-xs text-zinc-600">automatisch</p>
-                      </div>
-                    ) : (
-                      <NumberField label="Höhe" suffix="px" value={height} onChange={setHeight} />
-                    )}
-                  </div>
-                </div>
+                <DimensionFields
+                  width={width}
+                  height={height}
+                  lock={lock}
+                  lockBy={lockBy}
+                  onWidth={(v) => {
+                    setWidth(v);
+                    setLockBy("width");
+                  }}
+                  onHeight={(v) => {
+                    setHeight(v);
+                    setLockBy("height");
+                  }}
+                  onLock={setLock}
+                  onLockBy={setLockBy}
+                />
               )}
               <Segmented
                 label="Ausgabeformat"

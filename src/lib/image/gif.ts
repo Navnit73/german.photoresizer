@@ -8,6 +8,7 @@
  */
 import { createCanvas, getCtx, yieldToMain } from "./canvas";
 import { scaleSource } from "./resize";
+import { createGifWriter } from "./gifwriter";
 
 export interface GifFrame {
   rgba: Uint8ClampedArray;
@@ -91,7 +92,7 @@ export async function encodeGif(
   onProgress?: (done: number, total: number) => void,
   isCancelled?: () => boolean,
 ): Promise<{ bytes: Uint8Array; width: number; height: number; frameCount: number }> {
-  const { GIFEncoder, quantize, applyPalette } = await import("gifenc");
+  const { quantize, applyPalette } = await import("gifenc");
 
   // 1. Frame selection (delays merged so the animation keeps its speed)
   const picked: GifFrame[] = [];
@@ -121,7 +122,7 @@ export async function encodeGif(
   }
 
   const colors = Math.min(256, Math.max(2, Math.round(opts.colors)));
-  const gif = GIFEncoder();
+  let gif: ReturnType<typeof createGifWriter> | null = null;
   const threshold = Math.round(Math.max(0, Math.min(100, opts.tolerance)) * 0.5);
 
   if (src.hasAlpha) {
@@ -132,7 +133,8 @@ export async function encodeGif(
       const palette = quantize(f.rgba, colors, { format: "rgba4444", oneBitAlpha: true });
       const index = applyPalette(f.rgba, palette, "rgba4444");
       const tIdx = palette.findIndex((c) => c[3] === 0);
-      gif.writeFrame(index, w, h, { palette, delay: f.delay, transparent: tIdx >= 0, transparentIndex: Math.max(0, tIdx), dispose: 2 });
+      gif ??= createGifWriter(w, h, palette);
+      gif.frame(index, 0, 0, w, h, { palette: i === 0 ? undefined : palette, delay: f.delay, transparentIndex: tIdx, dispose: 2 });
       onProgress?.(i + 1, frames.length);
       if (i % 4 === 3) await yieldToMain();
     }
@@ -150,11 +152,16 @@ export async function encodeGif(
     const tIdx = palette.length;
     palette.push([0, 0, 0]);
     const displayed = new Uint8ClampedArray(w * h * 3);
+    gif = createGifWriter(w, h, palette);
 
     for (let i = 0; i < frames.length; i++) {
       if (isCancelled?.()) throw new Error("cancelled");
       const f = frames[i];
       const index = applyPalette(f.rgba, palette, "rgb565");
+      let minX = w;
+      let minY = h;
+      let maxX = -1;
+      let maxY = -1;
       for (let p = 0; p < w * h; p++) {
         const c = palette[index[p]];
         const d = p * 3;
@@ -168,18 +175,29 @@ export async function encodeGif(
         displayed[d] = c[0];
         displayed[d + 1] = c[1];
         displayed[d + 2] = c[2];
+        const x = p % w;
+        const y = (p - x) / w;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
       }
-      gif.writeFrame(index, w, h, {
-        palette: i === 0 ? palette : undefined,
-        delay: f.delay,
-        transparent: true,
-        transparentIndex: tIdx,
-        dispose: 1,
-      });
+      if (i === 0) {
+        gif.frame(index, 0, 0, w, h, { delay: f.delay, transparentIndex: tIdx, dispose: 1 });
+      } else if (maxX < 0) {
+        // Nothing changed: a single transparent pixel keeps the timing.
+        gif.frame(new Uint8Array([tIdx]), 0, 0, 1, 1, { delay: f.delay, transparentIndex: tIdx, dispose: 1 });
+      } else {
+        const bw = maxX - minX + 1;
+        const bh = maxY - minY + 1;
+        const sub = new Uint8Array(bw * bh);
+        for (let y = 0; y < bh; y++) sub.set(index.subarray((minY + y) * w + minX, (minY + y) * w + minX + bw), y * bw);
+        gif.frame(sub, minX, minY, bw, bh, { delay: f.delay, transparentIndex: tIdx, dispose: 1 });
+      }
       onProgress?.(i + 1, frames.length);
       if (i % 4 === 3) await yieldToMain();
     }
   }
-  gif.finish();
-  return { bytes: gif.bytes(), width: w, height: h, frameCount: frames.length };
+  if (!gif) throw new Error("Die GIF-Datei enthält keine Bilder.");
+  return { bytes: gif.finish(), width: w, height: h, frameCount: frames.length };
 }

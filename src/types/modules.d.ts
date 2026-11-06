@@ -40,3 +40,26 @@ declare module "gifuct-js" {
   export function parseGIF(buffer: ArrayBuffer): ParsedGif;
   export function decompressFrames(gif: ParsedGif, buildPatch: boolean): ParsedFrame[];
 }
+
+declare module "gifenc/src/stream.js" {
+  export interface ByteStream {
+    writeByte(b: number): void;
+    writeBytes(data: ArrayLike<number>, offset?: number, byteLength?: number): void;
+    bytes(): Uint8Array;
+  }
+  export default function createStream(initialCapacity?: number): ByteStream;
+}
+
+declare module "gifenc/src/lzwEncode.js" {
+  import type { ByteStream } from "gifenc/src/stream.js";
+  export default function lzwEncode(
+    width: number,
+    height: number,
+    pixels: Uint8Array,
+    colorDepth: number,
+    outStream: ByteStream,
+    accum: Uint8Array,
+    htab: Int32Array,
+    codetab: Int32Array,
+  ): void;
+}

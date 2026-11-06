@@ -28,7 +28,11 @@ export const EXT: Record<OutputFormat, string> = { jpeg: "jpg", png: "png", webp
 
 let jpegMod: Promise<typeof import("@jsquash/jpeg/encode")> | null = null;
 let webpMod: Promise<typeof import("@jsquash/webp/encode")> | null = null;
-let oxiMod: Promise<typeof import("@jsquash/oxipng/optimise")> | null = null;
+// OxiPNG: import the single-threaded wasm-bindgen build directly. The package
+// entry also references the multi-threaded build (wasm-bindgen-rayon worker that
+// imports itself), which deadlocks the Turbopack production build.
+type OxiModule = typeof import("@jsquash/oxipng/codec/pkg/squoosh_oxipng.js");
+let oxiMod: Promise<OxiModule> | null = null;
 
 function loadJpeg() {
   return (jpegMod ??= import("@jsquash/jpeg/encode"));
@@ -37,7 +41,10 @@ function loadWebp() {
   return (webpMod ??= import("@jsquash/webp/encode"));
 }
 function loadOxi() {
-  return (oxiMod ??= import("@jsquash/oxipng/optimise"));
+  return (oxiMod ??= import("@jsquash/oxipng/codec/pkg/squoosh_oxipng.js").then(async (m) => {
+    await m.default();
+    return m;
+  }));
 }
 
 /** Warm up a codec (e.g. when the user picks a format) to hide load latency. */
@@ -90,15 +97,15 @@ export async function encodePixels(img: ImageData, opts: EncodeOptions): Promise
     return new Uint8Array(await encode(img, { quality }));
   }
   // PNG
-  const { default: optimise } = await loadOxi();
+  const oxi = await loadOxi();
   if (opts.pngMode === "palette") {
     const UPNG = (await import("upng-js")).default;
     const colors = Math.min(256, Math.max(2, Math.round(opts.colors ?? 256)));
     const rgba = img.data.buffer.slice(img.data.byteOffset, img.data.byteOffset + img.data.byteLength) as ArrayBuffer;
     const quantised = UPNG.encode([rgba], img.width, img.height, colors);
-    return new Uint8Array(await optimise(quantised, { level: 2, interlace: false, optimiseAlpha: true }));
+    return oxi.optimise(new Uint8Array(quantised), 2, false, true);
   }
-  return new Uint8Array(await optimise(img, { level: 2, interlace: false, optimiseAlpha: true }));
+  return oxi.optimise_raw(img.data, img.width, img.height, 2, false, true);
 }
 
 /**

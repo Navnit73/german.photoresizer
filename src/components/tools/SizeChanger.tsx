@@ -1,9 +1,8 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Link2, Link2Off } from "lucide-react";
 import BatchTool, { type SourceInfo } from "./BatchTool";
-import { NumberField, Panel, Segmented, Slider } from "./ui";
+import { DimensionFields, Panel, Segmented, Slider } from "./ui";
 import { encodeCanvas, finishBlob, outputName, sourceFormat } from "@/lib/image/pipeline";
 import { renderToBox, type FitMode, type Resampling } from "@/lib/image/resize";
 import type { OutputFormat } from "@/lib/image/encode";
@@ -23,6 +22,7 @@ export default function SizeChanger() {
   const [width, setWidth] = useState(1920);
   const [height, setHeight] = useState(1080);
   const [lock, setLock] = useState(true);
+  const [lockBy, setLockBy] = useState<"width" | "height">("width");
   const [percent, setPercent] = useState(50);
   const [fit, setFit] = useState<FitMode>("cover");
   const [pad, setPad] = useState<Pad>("#ffffff");
@@ -41,6 +41,9 @@ export default function SizeChanger() {
       if (input === "percent") {
         w = Math.round((ow * percent) / 100);
         h = Math.round((oh * percent) / 100);
+      } else if (lock && lockBy === "height") {
+        h = height;
+        w = Math.round((height * ow) / oh);
       } else if (lock) {
         w = width;
         h = Math.round((width * oh) / ow);
@@ -57,7 +60,7 @@ export default function SizeChanger() {
       const data = await encodeCanvas(canvas, { format: outFormat, quality, pngMode: "lossless" });
       return { blob: finishBlob(data, outFormat, null, "strip"), width: w, height: h, filename: outputName(src.name, outFormat, `-${w}x${h}`) };
     },
-    [input, width, height, lock, percent, fit, pad, resampling, format, quality],
+    [input, width, height, lock, lockBy, percent, fit, pad, resampling, format, quality],
   );
 
   return (
@@ -68,7 +71,7 @@ export default function SizeChanger() {
       dropTitle="Bild hier ablegen"
       dropFormats="JPG, PNG, WebP, GIF, HEIC · auch mehrere Dateien"
       previewAlt="Bildgröße ändern – Vorschau mit neuen Pixelmaßen"
-      settingsKey={JSON.stringify([input, width, height, lock, percent, fit, pad, resampling, format, quality])}
+      settingsKey={JSON.stringify([input, width, height, lock, lockBy, percent, fit, pad, resampling, format, quality])}
       process={process}
       compare={false}
       checker
@@ -112,31 +115,22 @@ export default function SizeChanger() {
                   })}
                 </div>
               </div>
-              <div className="flex items-end gap-2">
-                <div className="flex-1">
-                  <NumberField label="Breite" suffix="px" value={width} onChange={setWidth} max={20000} />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setLock(!lock)}
-                  aria-pressed={lock}
-                  aria-label={lock ? "Seitenverhältnis gesperrt" : "Seitenverhältnis frei"}
-                  title={lock ? "Seitenverhältnis gesperrt" : "Seitenverhältnis frei"}
-                  className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${lock ? "border-lime-700 bg-lime-50 text-lime-800" : "border-zinc-300 text-zinc-600"}`}
-                >
-                  {lock ? <Link2 aria-hidden className="h-4 w-4" /> : <Link2Off aria-hidden className="h-4 w-4" />}
-                </button>
-                <div className="flex-1">
-                  {lock ? (
-                    <div>
-                      <p className="mb-1 text-xs font-medium text-zinc-700">Höhe</p>
-                      <p className="flex h-11 items-center rounded-xl border border-dashed border-zinc-300 px-3 text-xs text-zinc-600">proportional</p>
-                    </div>
-                  ) : (
-                    <NumberField label="Höhe" suffix="px" value={height} onChange={setHeight} max={20000} />
-                  )}
-                </div>
-              </div>
+              <DimensionFields
+                width={width}
+                height={height}
+                lock={lock}
+                lockBy={lockBy}
+                onWidth={(v) => {
+                  setWidth(v);
+                  setLockBy("width");
+                }}
+                onHeight={(v) => {
+                  setHeight(v);
+                  setLockBy("height");
+                }}
+                onLock={setLock}
+                onLockBy={setLockBy}
+              />
               {!lock && (
                 <Segmented
                   label="Wenn das Seitenverhältnis abweicht"

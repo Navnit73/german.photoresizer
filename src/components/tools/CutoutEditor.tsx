@@ -724,7 +724,7 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
                   setBg(v);
                   if (v !== "transparent" && format === "png" && variant === "auto") setFormat("jpeg");
                 }}
-                columns={4}
+                columns={2}
                 options={[
                   { value: "transparent", label: "Transparent" },
                   { value: "white", label: "Weiß" },

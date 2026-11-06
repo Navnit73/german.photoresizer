@@ -37,9 +37,7 @@ export default function GifCompressor() {
         note:
           frames === 1
             ? "Dieses GIF ist nicht animiert."
-            : blob.size >= src.file.size
-              ? "Kaum Ersparnis – reduzieren Sie Farben, Frames oder Größe."
-              : `${out.frameCount} von ${frames} Frames`,
+            : `${out.frameCount} von ${frames} Frames${blob.size >= src.file.size ? " · kaum Ersparnis – reduzieren Sie Farben, Frames oder Größe" : ""}`,
       };
     },
     [colors, frameStep, scale, tolerance],

@@ -95,19 +95,22 @@ export default function HomePage() {
             <h1 className="mt-4 text-[2rem] font-extrabold leading-[1.1] tracking-tight text-zinc-950 sm:text-5xl">
               Bilder kostenlos bearbeiten – alle Foto-Tools online
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-zinc-700 sm:text-lg">
+            <p className="mx-auto mt-3 max-w-2xl text-[15px] leading-relaxed text-zinc-700 sm:mt-4 sm:text-lg">
               Bilder kostenlos bearbeiten, direkt im Browser: verkleinern, komprimieren, zuschneiden oder den Hintergrund entfernen.
               Ihre Bilder bleiben dabei auf Ihrem Gerät.
             </p>
-            <div className="mt-6">
+            <div className="mt-5 sm:mt-6">
               <ToolSearch tools={searchTools} />
             </div>
-            <nav aria-label="Beliebte Werkzeuge" className="mt-4 flex flex-wrap justify-center gap-2">
+            <nav
+              aria-label="Beliebte Werkzeuge"
+              className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0"
+            >
               {shortcuts.map((t) => (
                 <Link
                   key={t.id}
                   href={t.path}
-                  className="inline-flex min-h-10 items-center rounded-full border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-800 shadow-sm transition-colors hover:border-lime-700 hover:text-lime-800"
+                  className="inline-flex min-h-10 shrink-0 items-center rounded-full border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-800 shadow-sm transition-colors hover:border-lime-700 hover:text-lime-800"
                 >
                   {t.name}
                 </Link>

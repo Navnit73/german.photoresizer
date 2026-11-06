@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useId, useRef, useState } from "react";
-import { AlertCircle, ImagePlus, ShieldCheck, X } from "lucide-react";
+import { AlertCircle, ImagePlus, Link2, Link2Off, ShieldCheck, X } from "lucide-react";
 
 /* ------------------------------- Dropzone ------------------------------- */
 
@@ -378,6 +378,68 @@ export function CompareSlider({
           />
         </>
       )}
+    </div>
+  );
+}
+
+/* ------------------------- Width / height with lock ------------------------- */
+
+/**
+ * Width/height inputs. With the ratio locked, the field edited last drives the
+ * size and the other one is computed per image ("automatisch").
+ */
+export function DimensionFields({
+  width,
+  height,
+  lock,
+  lockBy,
+  onWidth,
+  onHeight,
+  onLock,
+  onLockBy,
+  max = 20000,
+}: {
+  width: number;
+  height: number;
+  lock: boolean;
+  lockBy: "width" | "height";
+  onWidth: (v: number) => void;
+  onHeight: (v: number) => void;
+  onLock: (v: boolean) => void;
+  onLockBy: (v: "width" | "height") => void;
+  max?: number;
+}) {
+  const auto = (dim: "width" | "height", label: string) => (
+    <div>
+      <p className="mb-1 text-xs font-medium text-zinc-700">{label}</p>
+      <button
+        type="button"
+        onClick={() => onLockBy(dim)}
+        className="flex h-11 w-full items-center rounded-xl border border-dashed border-zinc-300 px-3 text-left text-xs text-zinc-600 hover:border-lime-700 hover:text-lime-800"
+        title={`${label} eingeben`}
+      >
+        automatisch
+      </button>
+    </div>
+  );
+  return (
+    <div className="flex items-end gap-2">
+      <div className="flex-1">
+        {lock && lockBy === "height" ? auto("width", "Breite") : <NumberField label="Breite" suffix="px" value={width} onChange={onWidth} max={max} />}
+      </div>
+      <button
+        type="button"
+        onClick={() => onLock(!lock)}
+        aria-pressed={lock}
+        aria-label={lock ? "Seitenverhältnis gesperrt" : "Seitenverhältnis frei"}
+        title={lock ? "Seitenverhältnis gesperrt" : "Seitenverhältnis frei"}
+        className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${lock ? "border-lime-700 bg-lime-50 text-lime-800" : "border-zinc-300 text-zinc-600"}`}
+      >
+        {lock ? <Link2 aria-hidden className="h-4 w-4" /> : <Link2Off aria-hidden className="h-4 w-4" />}
+      </button>
+      <div className="flex-1">
+        {lock && lockBy === "width" ? auto("height", "Höhe") : <NumberField label="Höhe" suffix="px" value={height} onChange={onHeight} max={max} />}
+      </div>
     </div>
   );
 }

@@ -74,3 +74,25 @@ Severity: 🔴 critical (ranking/legal/broken) · 🟡 high · ⚪ medium/low
 5. **Batch 1:** P3, P2, P1, P40, P27 · **Batch 2:** P51, P21, P4, P5, P41 — exact title/meta/H1/H2–H4/FAQ from page-plans.md.
 6. **Verify:** build, lint, title/meta lengths, one H1 per page, headless-browser smoke test of each tool.
 7. **Docs:** tracker, CLAUDE.md rule for the `live` flag, this audit.
+
+---
+
+## 7. Outcome (2026-11-06)
+
+All findings in §1–§4 are fixed. §5 (legal) needs owner input.
+
+**Verification** — production build passes (20 static routes). A headless-Chrome smoke test passes 34/34:
+- **Every page:** HTTP 200, title ≤ 60, meta 50–160, exactly one H1, self canonical, hreflang de/x-default, og:image, valid JSON-LD, no skipped heading levels, no console errors.
+- **Site files:** every internal link returns 200 (no links to unpublished pages). Sitemap lists the 13 live URLs; robots, manifest and the OG image resolve. The 404 route returns 404, and URLs without a trailing slash redirect with 308.
+- **Tools:** each was run with real files — JPG with EXIF/GPS, transparent PNG, animated GIF, HEIC from `sips`, a scan with white margins. This includes an in-browser MODNet background removal.
+
+**Build blocker found and fixed:** the `@jsquash/oxipng` package entry references its multi-threaded build. That build uses a wasm-bindgen-rayon worker that imports itself, and it deadlocks `next build` (Turbopack hangs at 0 % CPU). `src/lib/image/encode.ts` now imports the single-threaded build `@jsquash/oxipng/codec/pkg/squoosh_oxipng.js` directly. **Do not import `@jsquash/oxipng` (root) anywhere.**
+
+**Content:** article + FAQ is 1.012–1.077 words on all 10 tool pages. The homepage is ≈ 955 words because only 10 tools are live; it grows with every published batch.
+
+### Follow-ups (not blocking)
+- Move codec and AI work into a Web Worker to improve INP on large batches. It currently runs on the main thread, with yields between files.
+- Self-host AI models and the ONNX runtime (`NEXT_PUBLIC_MODEL_HOST`, `env.backends.onnx.wasm.wasmPaths`) so no third-party requests remain.
+- Add zoom/pan to the cut-out editor for detailed brush work.
+- Add tool usage events (upload / download / error) once a cookieless analytics tool is chosen (checklist #44).
+- Add "Über uns" / methodology page for E-E-A-T (checklist #26).
