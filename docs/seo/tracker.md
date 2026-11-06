@@ -1,7 +1,16 @@
-# Page Creation Tracker
+# Page Creation Tracker — DACH Photo-Utility Website
 
-> **⚠️ ALWAYS read this file before creating or editing any page.**
-> Update this file IMMEDIATELY after completing a page.
+> **🚨 MANDATORY AGENT INSTRUCTION (FOR CLAUDE / ANTIGRAVITY):**
+> 1. **BEFORE CREATING A PAGE:**
+>    - Check this tracker to verify the page status is `⬜ Not Started`.
+>    - Consult `docs/seo/page-plans.md` for exact metadata, H1–H4, outline, FAQs, and specs.
+>    - Consult `docs/seo/internal-linking.md` for the exact required internal links.
+>    - Consult `docs/seo/cannibalization.md` to maintain proper keyword differentiation.
+>    - Mark the page status here to `🟡 In Progress`.
+> 2. **AFTER CREATING A PAGE:**
+>    - Change status here to `✅ Done` and record the current date.
+>    - When internal links to/from other live pages are backfilled, mark the Links column as `🔗 Done`.
+>    - Append a line to the `## Update Log` at the bottom of this file.
 
 ---
 

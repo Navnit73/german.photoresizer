@@ -1,0 +1,52 @@
+# SEO & Quality Implementation Checklist
+
+> 46 verbindliche Prüfpunkte für Technik, On-Page SEO, Content, interne Verlinkung, DACH-Compliance und Monitoring.
+
+| # | Kategorie | Aufgabe (DE) | Task (EN) | Priorität | Phase | Status |
+|---|---|---|---|---|---|---|
+| 1 | **Technik** | HTTPS, HSTS, ein kanonischer Host (www oder ohne) | HTTPS, HSTS, one canonical host (www or non-www) | 🔴 **Critical** | Pre-launch | ⬜ Open |
+| 2 | **Technik** | Core Web Vitals: LCP < 2,5 s, INP < 200 ms, CLS < 0,1 (mobil) – Tool-JS/WASM lazy laden | Core Web Vitals: LCP < 2.5 s, INP < 200 ms, CLS < 0.1 (mobile) – lazy-load tool JS/WASM | 🔴 **Critical** | Pre-launch | ⬜ Open |
+| 3 | **Technik** | Mobile-first: Tool vollständig per Touch bedienbar, Upload über Foto-Mediathek | Mobile-first: tool fully usable by touch, upload from photo library | 🔴 **Critical** | Pre-launch | ⬜ Open |
+| 4 | **Technik** | Server-Side Rendering/Prerendering des Textinhalts (Tool darf Inhalt nicht nur clientseitig rendern) | Server-side render/prerender the text content (tool must not render content only client-side) | 🔴 **Critical** | Pre-launch | ⬜ Open |
+| 5 | **Technik** | Saubere, sprechende URLs in Kleinbuchstaben, ä/ö/ü/ß als ae/oe/ue/ss, Trailing Slash konsistent | Clean lowercase URLs, umlauts as ae/oe/ue/ss, consistent trailing slash | 🟡 High | Pre-launch | ⬜ Open |
+| 6 | **Technik** | Self-referencing Canonical auf jeder Seite | Self-referencing canonical on every page | 🟡 High | Pre-launch | ⬜ Open |
+| 7 | **Technik** | hreflang: de + x-default (optional de-CH-Varianten); reziprok und in Sitemap | hreflang: de + x-default (optional de-CH variants); reciprocal and in sitemap | 🟡 High | Pre-launch | ⬜ Open |
+| 8 | **Technik** | XML-Sitemap (nur indexierbare 200er-URLs), in robots.txt referenzieren, in GSC & Bing einreichen | XML sitemap (indexable 200 URLs only), referenced in robots.txt, submitted to GSC & Bing | 🟡 High | Day 1 | ⬜ Open |
+| 9 | **Technik** | robots.txt: keine Blockade von JS/CSS/WASM; Ergebnis-/Download-URLs (Blob) nicht indexieren | robots.txt: do not block JS/CSS/WASM; do not index result/download (blob) URLs | 🟡 High | Pre-launch | ⬜ Open |
+| 10 | **Technik** | Strukturierte Daten: WebApplication, BreadcrumbList, FAQPage (optional), Organization – mit Rich Results Test validieren | Structured data: WebApplication, BreadcrumbList, FAQPage (optional), Organization – validate with Rich Results Test | ⚪ Medium | Each page | ⬜ Open |
+| 11 | **Technik** | 404-Seite mit Tool-Suche; keine Soft-404; 301 für geänderte Slugs | 404 page with tool search; no soft 404s; 301 for changed slugs | ⚪ Medium | Pre-launch | ⬜ Open |
+| 12 | **Technik** | Bildoptimierung der eigenen Seite (WebP/AVIF, width/height, lazy loading) – Glaubwürdigkeit für ein Bild-Tool | Optimise the site’s own images (WebP/AVIF, width/height, lazy loading) – credibility for an image tool | 🟡 High | Pre-launch | ⬜ Open |
+| 13 | **Technik** | PWA: Manifest + Service Worker (Offline-Kernfunktionen), installierbar | PWA: manifest + service worker (offline core tools), installable | ⚪ Medium | Phase 2 | ⬜ Open |
+| 14 | **On-Page** | Title ≤ 60 Zeichen, Primärkeyword vorn, Marke am Ende (Längenprüfung in Sheet Page SEO Plans) | Title ≤ 60 characters, primary keyword first, brand at the end (length check in Page SEO Plans) | 🟡 High | Each page | ⬜ Open |
+| 15 | **On-Page** | Meta Description 140–160 Zeichen mit Nutzen + Differenzierung (kostenlos, ohne Anmeldung, im Browser) | Meta description 140–160 characters with benefit + differentiator (free, no sign-up, in browser) | 🟡 High | Each page | ⬜ Open |
+| 16 | **On-Page** | Genau eine H1 mit Primärkeyword; logische H2–H4-Hierarchie gemäß Plan | Exactly one H1 with primary keyword; logical H2–H4 hierarchy as planned | 🟡 High | Each page | ⬜ Open |
+| 17 | **On-Page** | Primärkeyword in den ersten 100 Wörtern; Sekundärkeywords natürlich in H2/H3/FAQ | Primary keyword in first 100 words; secondary keywords naturally in H2/H3/FAQ | 🟡 High | Each page | ⬜ Open |
+| 18 | **On-Page** | Tool-Widget above the fold; Upload-Bereich ohne Scrollen sichtbar | Tool widget above the fold; upload area visible without scrolling | 🔴 **Critical** | Each page | ⬜ Open |
+| 19 | **On-Page** | Bild-Alt-Texte beschreibend auf Deutsch (Screenshots, Beispielbilder) | Descriptive German alt texts (screenshots, sample images) | ⚪ Medium | Each page | ⬜ Open |
+| 20 | **On-Page** | Breadcrumb: Startseite › Themengruppe › Tool | Breadcrumb: Home › topic group › tool | ⚪ Medium | Each page | ⬜ Open |
+| 21 | **Content** | Einzigartiger Text je Seite (kein Textbaustein > 2 Sätze identisch über Seiten hinweg) | Unique copy per page (no boilerplate block longer than 2 sentences repeated across pages) | 🔴 **Critical** | Each page | ⬜ Open |
+| 22 | **Content** | Umfang laut Plan; Beispiele, Screenshots/GIFs, Vorher-nachher-Bilder | Length as planned; examples, screenshots/GIFs, before/after images | 🟡 High | Each page | ⬜ Open |
+| 23 | **Content** | FAQ-Antworten 40–80 Wörter, faktisch korrekt, ohne erfundene Zahlen | FAQ answers 40–80 words, factually correct, no invented numbers | 🟡 High | Each page | ⬜ Open |
+| 24 | **Content** | Plattform-/Software-Angaben (Instagram-Größen, iOS-Menüs, Windows-Menüs) vor Veröffentlichung verifizieren und Prüfdatum notieren | Verify platform/software details (Instagram sizes, iOS/Windows menus) before publishing and record check date | 🟡 High | Each page | ⬜ Open |
+| 25 | **Content** | Muttersprachliches Lektorat (DE) inkl. Duden-Schreibweisen (E-Mail, WebP, JPG) | Native German proofreading incl. Duden spellings (E-Mail, WebP, JPG) | 🟡 High | Each page | ⬜ Open |
+| 26 | **Content** | Autor-/Über-uns-Seite und Kontakt für E-E-A-T; Hinweis zur Methodik der Tools | Author/About page and contact for E-E-A-T; explain how the tools work | ⚪ Medium | Pre-launch | ⬜ Open |
+| 27 | **Interne Verlinkung** | Startseite verlinkt alle Themengruppen und Top-Tools | Homepage links to all topic groups and top tools | 🟡 High | Day 1 | ⬜ Open |
+| 28 | **Interne Verlinkung** | Jede Landingpage: 3–7 kontextuelle Links laut Sheet Internal Linking + „Verwandte Tools“-Block | Each landing page: 3–7 contextual links per Internal Linking sheet + “related tools” block | 🟡 High | Each page | ⬜ Open |
+| 29 | **Interne Verlinkung** | Bei Veröffentlichung eines Batches: Links von bereits live Seiten nachtragen (Backfill) | When a batch goes live: add links from already-live pages (backfill) | 🟡 High | Each batch | ⬜ Open |
+| 30 | **Interne Verlinkung** | Keine verwaisten Seiten (Crawl mit Screaming Frog/Sitebulb nach jedem Batch) | No orphan pages (crawl with Screaming Frog/Sitebulb after each batch) | ⚪ Medium | Each batch | ⬜ Open |
+| 31 | **DACH-Lokalisierung** | Impressum nach DE § 5 DDG, AT § 5 ECG / § 25 MedienG, CH UWG Art. 3 Abs. 1 lit. s | Legal notice (Impressum) per DE § 5 DDG, AT § 5 ECG / § 25 MedienG, CH UWG Art. 3(1)(s) | 🔴 **Critical** | Pre-launch | ⬜ Open |
+| 32 | **DACH-Lokalisierung** | Datenschutzerklärung nach DSGVO und revDSG; Angabe Verarbeitungsort (Browser/EU-Server) und Löschfristen | Privacy policy per GDPR and Swiss revDSG; state processing location (browser/EU server) and deletion periods | 🔴 **Critical** | Pre-launch | ⬜ Open |
+| 33 | **DACH-Lokalisierung** | Cookie-Consent (TDDDG DE, TKG 2021 AT); Analytics nur nach Einwilligung oder cookielos | Cookie consent (TDDDG DE, TKG 2021 AT); analytics only after consent or cookieless | 🔴 **Critical** | Pre-launch | ⬜ Open |
+| 34 | **DACH-Lokalisierung** | Schweizer Schreibweise („ss“) bei de-CH-Varianten; sonst Varianten (z. B. „Bildgrösse“) natürlich im Text | Swiss spelling (“ss”) for de-CH variants; otherwise include variants (e.g. “Bildgrösse”) naturally in copy | ⚪ Medium | Phase 2 | ⬜ Open |
+| 35 | **DACH-Lokalisierung** | Metrische Einheiten (cm, mm) zuerst; Dezimalkomma; DIN-Formate | Metric units (cm, mm) first; decimal comma; DIN paper sizes | ⚪ Medium | Each page | ⬜ Open |
+| 36 | **DACH-Lokalisierung** | Länderspezifische Behörden-Links (Passfoto: DE/AT/CH-Quellen) statt eigener Regelangaben | Link to official DE/AT/CH authority sources (passport photo) instead of restating rules | ⚪ Medium | Relevant pages | ⬜ Open |
+| 37 | **Daten** | Keyword-Planer-Export je Land (DE, AT, CH) separat wiederholen – Länderanteil der Volumen ist in den CSVs nicht enthalten | Re-run Keyword Planner export per country (DE, AT, CH) – country split is not in the CSVs | 🟡 High | Pre-launch | ⬜ Open |
+| 38 | **Daten** | Konto-Währung auf EUR umstellen bzw. Gebote nur relativ vergleichen (Export in INR) | Switch account currency to EUR or compare bids relatively only (export is in INR) | ⚪ Low | Optional | ⬜ Open |
+| 39 | **Daten** | Monatswerte (Saisonalität) exportieren – in den CSVs leer | Export monthly values (seasonality) – empty in the CSVs | ⚪ Medium | Optional | ⬜ Open |
+| 40 | **Monitoring** | Google Search Console (Domain-Property) + Bing Webmaster Tools; Leistung nach Land DE/AT/CH filtern | Google Search Console (domain property) + Bing Webmaster Tools; filter performance by country DE/AT/CH | 🔴 **Critical** | Day 1 | ⬜ Open |
+| 41 | **Monitoring** | Kannibalisierungs-Check monatlich: Queries mit > 1 rankender URL (GSC-Export) gegen Sheet Cannibalization Audit | Monthly cannibalisation check: queries with > 1 ranking URL (GSC export) vs. Cannibalization Audit sheet | 🟡 High | Monthly | ⬜ Open |
+| 42 | **Monitoring** | Indexierungsstatus 7 Tage nach Veröffentlichung prüfen (Spalte im Publishing Calendar) | Check indexing status 7 days after publishing (column in Publishing Calendar) | 🟡 High | Each batch | ⬜ Open |
+| 43 | **Monitoring** | Rank-Tracking der Primärkeywords je Land | Rank tracking of primary keywords per country | ⚪ Medium | Weekly | ⬜ Open |
+| 44 | **Monitoring** | Tool-Nutzung messen (Events: Upload, Download, Fehler) – Engagement-Signal und UX-Optimierung | Track tool usage (events: upload, download, error) – engagement signal and UX optimisation | ⚪ Medium | Day 1 | ⬜ Open |
+| 45 | **Off-Page** | Einträge in Tool-Verzeichnissen und Erwähnungen in DACH-Tech-Medien; Links von .de/.at/.ch-Domains | Listings in tool directories and mentions in DACH tech media; links from .de/.at/.ch domains | ⚪ Medium | Post-launch | ⬜ Open |
+| 46 | **Off-Page** | Linkable Assets: Formatvergleich (JPG/PNG/WebP/HEIC), Passfoto-Maße-Übersicht mit Behördenlinks | Linkable assets: format comparison (JPG/PNG/WebP/HEIC), passport-photo size overview with authority links | ⚪ Low | Post-launch | ⬜ Open |
