@@ -1,69 +1,323 @@
-import Image from "next/image";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowRight, Check, GraduationCap, Laptop, Lock, ShieldCheck, ShoppingBag, Smartphone, Sparkles, User, Ban } from "lucide-react";
+import PhotoEditor from "@/components/PhotoEditor";
+import ToolDirectory from "@/components/ToolDirectory";
+import ToolSearch, { type SearchTool } from "@/components/ToolSearch";
+import Faq from "@/components/site/Faq";
+import JsonLd from "@/components/site/JsonLd";
+import ToolLink from "@/components/site/ToolLink";
+import { LIVE_TOOLS, liveTools } from "@/lib/tools";
+import {
+  buildMetadata,
+  faqSchema,
+  graph,
+  itemListSchema,
+  organizationSchema,
+  webApplicationSchema,
+  websiteSchema,
+  type FaqItem,
+} from "@/lib/seo";
 
-export default function Home() {
+const TITLE = "Bilder kostenlos bearbeiten – online & ohne Anmeldung";
+const DESCRIPTION =
+  "Bilder kostenlos bearbeiten: verkleinern, komprimieren, Hintergrund entfernen, HEIC in JPG umwandeln und zuschneiden – online, ohne Anmeldung, im Browser.";
+
+export const metadata: Metadata = buildMetadata({ title: TITLE, description: DESCRIPTION, path: "/" });
+
+/** Extra search terms for the hero search (synonyms users type). */
+const SEARCH_TERMS: Record<string, string> = {
+  P1: "kleiner machen resize pixel verkleinern foto minimieren",
+  P2: "dateigröße reduzieren kb mb speicher komprimieren",
+  P3: "jpeg jpg qualität exif komprimieren",
+  P4: "png transparenz verkleinern",
+  P5: "gif animation verkleinern",
+  P21: "pixel skalieren breite höhe bildgröße auflösung",
+  P27: "heic heif iphone jpg konvertieren umwandeln",
+  P40: "hintergrund entfernen transparent ki freistellen",
+  P41: "freistellen ausschneiden objekt lasso",
+  P51: "zuschneiden beschneiden crop ausschnitt",
+};
+
+const HERO_SHORTCUTS = ["P1", "P2", "P40", "P27", "P51", "P21"];
+
+const FAQS: FaqItem[] = [
+  {
+    q: "Kann ich Bilder wirklich kostenlos bearbeiten?",
+    a: "Ja. Alle Werkzeuge auf dieser Website sind kostenlos und ohne Anmeldung nutzbar. Es gibt kein Abo, keine Testphase und kein Wasserzeichen auf Ihren Ergebnissen. Sie laden das bearbeitete Bild in voller Auflösung herunter, so oft Sie möchten.",
+  },
+  {
+    q: "Werden meine Fotos auf einen Server hochgeladen?",
+    a: "Nein. Die Bildbearbeitung läuft vollständig in Ihrem Browser auf Ihrem eigenen Gerät. Ihre Fotos werden nicht an unseren Server übertragen und nicht gespeichert. Bei den KI-Werkzeugen wird lediglich das KI-Modell einmalig heruntergeladen – das Foto selbst verlässt Ihr Gerät nicht.",
+  },
+  {
+    q: "Muss ich ein Programm oder eine App installieren?",
+    a: "Nein. Sie brauchen nur einen aktuellen Browser wie Chrome, Edge, Firefox oder Safari – auf Windows, Mac, Linux, iPhone, iPad oder Android. Einige Funktionen laden beim ersten Aufruf zusätzliche Programmbausteine nach, die der Browser anschließend zwischenspeichert.",
+  },
+  {
+    q: "Welche Bildformate werden unterstützt?",
+    a: "Sie können JPG/JPEG, PNG, WebP und GIF öffnen, außerdem HEIC und HEIF vom iPhone. Gespeichert wird je nach Werkzeug als JPG, PNG, WebP oder GIF. Welche Formate ein Tool genau annimmt, steht direkt im jeweiligen Upload-Feld.",
+  },
+  {
+    q: "Kann ich mehrere Bilder gleichzeitig bearbeiten?",
+    a: "Ja. Beim Verkleinern, Komprimieren und beim Umwandeln von HEIC in JPG können Sie mehrere Dateien auf einmal auswählen. Alle Bilder werden mit denselben Einstellungen verarbeitet und lassen sich gesammelt als ZIP-Archiv herunterladen. Der Foto-Editor auf dieser Seite bearbeitet jeweils ein Bild.",
+  },
+  {
+    q: "Funktionieren die Tools auch auf dem iPhone und Android-Handy?",
+    a: "Ja. Alle Werkzeuge sind für Touch-Bedienung ausgelegt; Sie wählen Fotos direkt aus der Mediathek. Auf iPhone und iPad begrenzt Safari die Größe von Zeichenflächen – sehr große Fotos über rund 16 Megapixel werden dort vor der Bearbeitung automatisch verkleinert, worauf das Tool hinweist.",
+  },
+];
+
+export default function HomePage() {
+  const searchTools: SearchTool[] = LIVE_TOOLS.map((t) => ({ name: t.name, path: t.path, desc: t.desc, keywords: SEARCH_TERMS[t.id] ?? "" }));
+  const shortcuts = liveTools(HERO_SHORTCUTS);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main id="main" className="flex-1 bg-white">
+      <JsonLd
+        data={graph(
+          websiteSchema(),
+          organizationSchema(),
+          webApplicationSchema("FotoWerkzeuge Foto-Editor", "/", DESCRIPTION),
+          itemListSchema(LIVE_TOOLS),
+          faqSchema(FAQS, "/"),
+        )}
+      />
+
+      {/* Hero */}
+      <section className="relative border-b border-zinc-200 bg-[radial-gradient(ellipse_at_top,_#f7fee7_0%,_#fafafa_45%,_#fafafa_100%)]">
+        <div className="mx-auto max-w-7xl px-4 pb-10 pt-8 sm:px-6 sm:pt-12 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="inline-flex items-center gap-2 rounded-full border border-lime-700/25 bg-white px-3.5 py-1 text-xs font-semibold text-lime-900">
+              <Sparkles aria-hidden className="h-3.5 w-3.5 text-lime-700" />
+              Kostenlos · ohne Anmeldung · ohne Wasserzeichen
+            </p>
+            <h1 className="mt-4 text-[2rem] font-extrabold leading-[1.1] tracking-tight text-zinc-950 sm:text-5xl">
+              Bilder kostenlos bearbeiten – alle Foto-Tools online
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-zinc-700 sm:text-lg">
+              Bilder kostenlos bearbeiten, direkt im Browser: verkleinern, komprimieren, zuschneiden oder den Hintergrund entfernen.
+              Ihre Bilder bleiben dabei auf Ihrem Gerät.
+            </p>
+            <div className="mt-6">
+              <ToolSearch tools={searchTools} />
+            </div>
+            <nav aria-label="Beliebte Werkzeuge" className="mt-4 flex flex-wrap justify-center gap-2">
+              {shortcuts.map((t) => (
+                <Link
+                  key={t.id}
+                  href={t.path}
+                  className="inline-flex min-h-10 items-center rounded-full border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-800 shadow-sm transition-colors hover:border-lime-700 hover:text-lime-800"
+                >
+                  {t.name}
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          <div className="mx-auto mt-8 max-w-6xl">
+            <PhotoEditor />
+            <ul className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-zinc-700">
+              {["Verarbeitung lokal im Browser", "Kein Wasserzeichen", "Keine Anmeldung"].map((s) => (
+                <li key={s} className="inline-flex items-center gap-1.5">
+                  <Check aria-hidden className="h-4 w-4 text-lime-700" /> {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Tool directory */}
+      <section id="tools" className="py-16 sm:py-20" aria-labelledby="tools-heading">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-10 max-w-3xl">
+            <h2 id="tools-heading" className="text-3xl font-extrabold tracking-tight text-zinc-950">
+              Beliebte Foto-Tools
+            </h2>
+            <p className="mt-3 text-base leading-relaxed text-zinc-700">
+              Jedes Werkzeug ist auf eine Aufgabe spezialisiert. Wählen Sie das passende Tool – die kostenlose Bildbearbeitung startet
+              sofort, ganz ohne Anmeldung.
+            </p>
+          </div>
+          <ToolDirectory />
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section id="anleitung" className="border-y border-zinc-200 bg-zinc-50 py-16 sm:py-20" aria-labelledby="how-heading">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 id="how-heading" className="max-w-3xl text-3xl font-extrabold tracking-tight text-zinc-950">
+            So funktioniert die kostenlose Bildbearbeitung im Browser
+          </h2>
+          <p className="mt-3 max-w-3xl text-base leading-relaxed text-zinc-700">
+            Moderne Browser können Bilder selbst berechnen. Deshalb brauchen Sie weder ein Programm noch ein Konto – drei Schritte
+            genügen.
+          </p>
+          <ol className="mt-10 grid gap-4 md:grid-cols-3">
+            {[
+              {
+                h: "1. Tool auswählen",
+                p: "Suchen Sie oben nach Ihrer Aufgabe oder wählen Sie ein Werkzeug aus der Übersicht. Für schnelle Korrekturen nutzen Sie den Foto-Editor auf dieser Seite.",
+              },
+              {
+                h: "2. Bild hochladen",
+                p: "Ziehen Sie Ihr Foto per Drag & Drop in das Feld oder wählen Sie es aus. „Hochladen“ heißt hier: Der Browser öffnet die Datei lokal – sie wird nicht an einen Server gesendet.",
+              },
+              {
+                h: "3. Ergebnis herunterladen",
+                p: "Passen Sie die Einstellungen an und speichern Sie das Ergebnis. Mehrere Dateien fassen die Stapel-Tools auf Wunsch in einem ZIP-Archiv zusammen.",
+              },
+            ].map((s) => (
+              <li key={s.h} className="rounded-2xl border border-zinc-200 bg-white p-6">
+                <h3 className="text-lg font-bold text-zinc-950">{s.h}</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-zinc-700">{s.p}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* Why */}
+      <section className="py-16 sm:py-20" aria-labelledby="why-heading">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 id="why-heading" className="max-w-3xl text-3xl font-extrabold tracking-tight text-zinc-950">
+            Warum unsere Foto-Tools?
+          </h2>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                icon: Ban,
+                h: "Kostenlos und ohne Anmeldung",
+                p: "Fotobearbeitung kostenlos und ohne Nutzerkonto: keine E-Mail-Adresse, keine Testphase, keine Begrenzung der Bildanzahl.",
+              },
+              {
+                icon: ShieldCheck,
+                h: "Kein Wasserzeichen",
+                p: "Ihre Ergebnisse gehören Ihnen. Wir fügen weder Logos noch Markierungen hinzu und verringern die Auflösung nicht künstlich.",
+              },
+              {
+                icon: Lock,
+                h: "Datenschutz: Verarbeitung direkt auf Ihrem Gerät",
+                p: "Die Berechnung erfolgt im Browser, teils mit WebAssembly-Bausteinen. Ihre Bilder werden nicht übertragen – ein Vorteil im Sinne von DSGVO und revDSG.",
+              },
+              {
+                icon: Laptop,
+                h: "Für Computer, Tablet und Smartphone",
+                p: "Die Oberfläche passt sich jedem Bildschirm an und lässt sich per Maus, Tastatur oder Touch bedienen – unter Windows, macOS, iOS und Android.",
+              },
+            ].map(({ icon: Icon, h, p }) => (
+              <div key={h} className="rounded-2xl border border-zinc-200 bg-white p-6">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-lime-50 text-lime-800">
+                  <Icon aria-hidden className="h-5 w-5" />
+                </span>
+                <h3 className="mt-4 text-base font-bold text-zinc-950">{h}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-zinc-700">{p}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Audiences */}
+      <section className="border-y border-zinc-200 bg-zinc-50 py-16 sm:py-20" aria-labelledby="audience-heading">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 id="audience-heading" className="max-w-3xl text-3xl font-extrabold tracking-tight text-zinc-950">
+            Für wen eignen sich die Tools?
+          </h2>
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+              <User aria-hidden className="h-6 w-6 text-lime-700" />
+              <h3 className="mt-3 text-lg font-bold text-zinc-950">Privatpersonen</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-zinc-700">
+                Fotos kostenlos bearbeiten für den Alltag: Urlaubsbilder für den E-Mail-Versand kleiner machen, iPhone-Fotos im HEIC-Format
+                für ältere Geräte umwandeln oder ein Bild für das Profilfoto zuschneiden.
+              </p>
+              <p className="mt-3 text-sm">
+                <ToolLink id="P27" /> · <ToolLink id="P1" />
+              </p>
+            </div>
+            <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+              <ShoppingBag aria-hidden className="h-6 w-6 text-lime-700" />
+              <h3 className="mt-3 text-lg font-bold text-zinc-950">Onlineshops und Selbstständige</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-zinc-700">
+                Produktfotos freistellen, auf einen ruhigen Hintergrund setzen und für kurze Ladezeiten komprimieren. Viele Marktplätze
+                haben eigene Bildrichtlinien – prüfen Sie diese vor dem Hochladen.
+              </p>
+              <p className="mt-3 text-sm">
+                <ToolLink id="P40" /> · <ToolLink id="P2" />
+              </p>
+            </div>
+            <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+              <GraduationCap aria-hidden className="h-6 w-6 text-lime-700" />
+              <h3 className="mt-3 text-lg font-bold text-zinc-950">Schulen, Vereine und Behördenkontakte</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-zinc-700">
+                Upload-Portale von Hochschulen, Ämtern oder Bewerbungsplattformen begrenzen oft die Dateigröße. Mit der Zielgröße-Funktion
+                bringen Sie ein Foto zuverlässig unter ein vorgegebenes Limit.
+              </p>
+              <p className="mt-3 text-sm">
+                <ToolLink id="P1" /> · <ToolLink id="P3" />
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison */}
+      <section className="py-16 sm:py-20" aria-labelledby="compare-heading">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <h2 id="compare-heading" className="max-w-3xl text-3xl font-extrabold tracking-tight text-zinc-950">
+            Fotobearbeitung kostenlos: Online-Tool, Programm oder App?
+          </h2>
+          <p className="mt-3 max-w-3xl text-base leading-relaxed text-zinc-700">
+            Kostenlose Bildbearbeitung gibt es in drei Varianten. Welche passt, hängt davon ab, wie oft und wie aufwendig Sie Bilder
+            bearbeiten.
+          </p>
+          <div className="mt-10 grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl border-2 border-lime-700/50 bg-lime-50/40 p-6">
+              <h3 className="text-lg font-bold text-zinc-950">Online-Tool ohne Installation</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-zinc-700">
+                Ideal für klar umrissene Aufgaben wie Verkleinern, Komprimieren, Zuschneiden oder Umwandeln. Bildbearbeitung online kostenlos,
+                sofort startklar und auf jedem Gerät gleich.
+              </p>
+              <ul className="mt-4 space-y-1.5 text-sm text-zinc-800">
+                {["Keine Installation, keine Updates", "Auch auf fremden oder Firmen-PCs nutzbar", "Spezialisierte Werkzeuge je Aufgabe"].map((s) => (
+                  <li key={s} className="flex items-start gap-2">
+                    <Check aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-lime-700" /> {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+              <h3 className="text-lg font-bold text-zinc-950">Kostenlose Bildbearbeitungsprogramme</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-zinc-700">
+                Desktop-Programme wie GIMP oder Paint.NET bieten Ebenen, Masken und komplexe Retusche. Dafür brauchen sie eine Installation und
+                etwas Einarbeitung. Ein Vergleich folgt im Ratgeber <ToolLink id="P68" />.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+              <Smartphone aria-hidden className="h-6 w-6 text-lime-700" />
+              <h3 className="mt-3 text-lg font-bold text-zinc-950">Bildbearbeitungs-Apps fürs Handy</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-zinc-700">
+                Apps sind praktisch für Filter und schnelle Korrekturen unterwegs, belegen aber Speicherplatz und verlangen oft ein Konto.
+                Unsere Tools laufen ohne Download direkt im mobilen Browser.
+              </p>
+            </div>
+          </div>
+          <p className="mt-8">
+            <Link href="#editor" className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-lime-700 px-5 text-sm font-semibold text-white hover:bg-lime-800">
+              Jetzt Bilder kostenlos bearbeiten <ArrowRight aria-hidden className="h-4 w-4" />
+            </Link>
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* FAQ */}
+      <section className="border-t border-zinc-200 bg-zinc-50 py-16 sm:py-20">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <Faq title="Häufige Fragen zur kostenlosen Bildbearbeitung" items={FAQS} />
         </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }

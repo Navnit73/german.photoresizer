@@ -123,8 +123,30 @@ Every tool page follows this exact layout order:
 ### 3.7 After Creating a Page
 
 1. **Update `docs/seo/tracker.md`** — mark the page as "Done" with the date
-2. **Add internal links** to already-live pages per `docs/seo/internal-linking.md`
-3. **Verify:** Title length ≤ 60 chars, meta length ≤ 160 chars, exactly one H1
+2. **Set `live: true`** (and `liveSince`) for the page in `src/lib/tools.ts` — see §3.8
+3. **Add internal links** to already-live pages per `docs/seo/internal-linking.md`
+4. **Verify:** Title length ≤ 60 chars, meta length ≤ 160 chars, exactly one H1
+
+### 3.8 MANDATORY: Never Link or Show Pages That Do Not Exist Yet
+
+- `src/lib/tools.ts` is the single registry of all 69 pages. Each entry has a `live` flag.
+- **Only pages with `live: true` may appear anywhere**: homepage tool directory, hero shortcuts, tool search, header menu, footer, "Weitere passende Foto-Tools", sitemap, 404 page.
+- Never hard-code a link to a tool page. Use:
+  - `<ToolLink id="Pxx">Anchor</ToolLink>` for in-text links — renders plain text while the target is not live and becomes a link automatically once it is (this is the internal-link backfill).
+  - `<RelatedTools ids={[...]} />` with the full related list from `page-plans.md` — unpublished entries are filtered out.
+  - `LIVE_TOOLS` / `liveToolsInGroup()` / `liveTools()` for navigation and listings.
+- Set `live: true` in the **same change** that creates the page — never earlier.
+- Do not show "coming soon" teasers for unbuilt pages.
+
+### 3.9 Page & Tool Implementation Rules
+
+- **Page shell:** every tool page uses `src/components/site/ToolPage.tsx` (breadcrumb, H1 + widget above the fold, content, FAQ with schema, related tools, CTA). Copy goes in `children` as plain `<h2>/<h3>/<h4>/<p>` (styled by `.content`); use `Steps`, `TrustList`, `Note` from `src/components/site/content.tsx`.
+- **Metadata:** always `buildMetadata()` from `src/lib/seo.ts` (exact plan title; brand is appended only if it still fits in 60 chars; canonical + hreflang de/x-default; OG/Twitter).
+- **FAQ:** one `FaqItem[]` array feeds both the visible FAQ and the FAQPage JSON-LD — never maintain FAQ text twice.
+- **Headings:** if a plan puts an H4 directly under an H2, use H3 instead (no skipped levels).
+- **Tool widgets** live in `src/components/tools/`. Reuse the engine: `BatchTool` (multi-file, compare, ZIP), `CropStage`, `CutoutEditor`, and `src/lib/image/*` (decode incl. HEIC, resize, MozJPEG/OxiPNG/WebP encoders, EXIF, GIF, AI segmentation). All processing stays in the browser — never upload user images.
+- **Honesty:** page copy may only describe features the widget actually has. If a plan FAQ answer would be false for the implementation, rephrase it truthfully.
+- **Design:** follow `DESIGN.md` (white / lime-700 / zinc only), touch targets ≥ 44 px, no `text-zinc-400` for readable text.
 
 ---
 

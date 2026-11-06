@@ -11,6 +11,7 @@
 >    - Change status here to `✅ Done` and record the current date.
 >    - When internal links to/from other live pages are backfilled, mark the Links column as `🔗 Done`.
 >    - Append a line to the `## Update Log` at the bottom of this file.
+>    - Set `live: true` for the page in `src/lib/tools.ts` (CLAUDE.md §3.8). Pages that are not live must never be linked or listed anywhere.
 
 ---
 
@@ -29,7 +30,7 @@
 
 | Page | URL | Primary KW | Status | Date | Notes |
 |---|---|---|---|---|---|
-| HOME | `/` | bilder kostenlos bearbeiten | ⬜ Not Started | — | Hub page; publish Day 1 with legal pages |
+| HOME | `/` | bilder kostenlos bearbeiten | ✅ Done | 2026-11-06 | Hub page: canvas editor (crop/rotate/adjust/export), tool search + directory of **live** tools only, WebSite/Organization/ItemList/FAQ schema. Rebuilt after audit 2026-11-06. |
 
 ---
 
@@ -37,9 +38,9 @@
 
 | Page | URL | Status | Date | Notes |
 |---|---|---|---|---|
-| Impressum | `/impressum/` | ⬜ Not Started | — | DE/AT/CH legal notice |
-| Datenschutz | `/datenschutz/` | ⬜ Not Started | — | GDPR + revDSG privacy policy |
-| Cookie-Einstellungen | — | ⬜ Not Started | — | Consent banner (TDDDG/TKG) |
+| Impressum | `/impressum/` | ✅ Done | 2026-11-06 | DE § 5 DDG, AT § 5 ECG / § 25 MedienG, CH UWG compliant |
+| Datenschutz | `/datenschutz/` | ✅ Done | 2026-11-06 | GDPR + revDSG compliant (client-side in-browser processing) |
+| Cookie-Einstellungen | — | ⬜ Not needed yet | — | No cookies/tracking set. Re-evaluate before adding any analytics (TDDDG/TKG). |
 
 ---
 
@@ -47,11 +48,11 @@
 
 | # | Page ID | URL | Slug (EN) | Primary KW | Type | Status | Date | Links |
 |---|---|---|---|---|---|---|---|---|
-| 1 | P3 | `/jpg-komprimieren/` | compress JPG | jpg komprimieren | Tool | ⬜ Not Started | — | ⬜ |
-| 2 | P2 | `/bilder-komprimieren/` | compress images | bilder komprimieren | Tool | ⬜ Not Started | — | ⬜ |
-| 3 | P1 | `/bild-verkleinern/` | resize image | bild verkleinern | Tool | ⬜ Not Started | — | ⬜ |
-| 4 | P40 | `/hintergrund-entfernen/` | remove background | hintergrund entfernen | Tool | ⬜ Not Started | — | ⬜ |
-| 5 | P27 | `/heic-in-jpg/` | HEIC to JPG | heic in jpg umwandeln | Tool | ⬜ Not Started | — | ⬜ |
+| 1 | P3 | `/jpg-komprimieren/` | compress JPG | jpg komprimieren | Tool | ✅ Done | 2026-11-06 | 🔗 Done |
+| 2 | P2 | `/bilder-komprimieren/` | compress images | bilder komprimieren | Tool | ✅ Done | 2026-11-06 | 🔗 Done |
+| 3 | P1 | `/bild-verkleinern/` | resize image | bild verkleinern | Tool | ✅ Done | 2026-11-06 | 🔗 Done |
+| 4 | P40 | `/hintergrund-entfernen/` | remove background | hintergrund entfernen | Tool | ✅ Done | 2026-11-06 | 🔗 Done |
+| 5 | P27 | `/heic-in-jpg/` | HEIC to JPG | heic in jpg umwandeln | Tool | ✅ Done | 2026-11-06 | 🔗 Done |
 
 ---
 
@@ -59,11 +60,11 @@
 
 | # | Page ID | URL | Slug (EN) | Primary KW | Type | Status | Date | Links |
 |---|---|---|---|---|---|---|---|---|
-| 6 | P51 | `/bild-zuschneiden/` | crop image | bild zuschneiden | Tool | ⬜ Not Started | — | ⬜ |
-| 7 | P21 | `/bildgroesse-aendern/` | change image size | bildgröße ändern | Tool | ⬜ Not Started | — | ⬜ |
-| 8 | P4 | `/png-komprimieren/` | compress PNG | png komprimieren | Tool | ⬜ Not Started | — | ⬜ |
-| 9 | P5 | `/gif-komprimieren/` | compress GIF | gif komprimieren | Tool | ⬜ Not Started | — | ⬜ |
-| 10 | P41 | `/bild-freistellen/` | cut out subject | bild freistellen online | Tool | ⬜ Not Started | — | ⬜ |
+| 6 | P51 | `/bild-zuschneiden/` | crop image | bild zuschneiden | Tool | ✅ Done | 2026-11-06 | 🔗 Done |
+| 7 | P21 | `/bildgroesse-aendern/` | change image size | bildgröße ändern | Tool | ✅ Done | 2026-11-06 | 🔗 Done |
+| 8 | P4 | `/png-komprimieren/` | compress PNG | png komprimieren | Tool | ✅ Done | 2026-11-06 | 🔗 Done |
+| 9 | P5 | `/gif-komprimieren/` | compress GIF | gif komprimieren | Tool | ✅ Done | 2026-11-06 | 🔗 Done |
+| 10 | P41 | `/bild-freistellen/` | cut out subject | bild freistellen online | Tool | ✅ Done | 2026-11-06 | 🔗 Done |
 
 ---
 
@@ -214,9 +215,9 @@
 
 | Status | Count |
 |---|---|
-| ⬜ Not Started | 69 pages + HOME + 3 legal |
+| ⬜ Not Started | 59 landing pages |
 | 🟡 In Progress | 0 |
-| ✅ Done | 0 |
+| ✅ Done | 13 (Homepage, Impressum, Datenschutz, Batch 1, Batch 2) |
 | **Total** | **73** |
 
 ---
@@ -226,4 +227,8 @@
 | Date | Action | Pages |
 |---|---|---|
 | 2026-11-06 | Tracker created | — |
+| 2026-11-06 | Created Launch Day Pages (HOME, Impressum, Datenschutz) with Fabric.js editor component & DESIGN.md | `/`, `/impressum/`, `/datenschutz/` |
+| 2026-11-06 | Full audit (docs/audit/2026-11-06-audit-and-plan.md); rebuilt homepage, header/footer, editor (Fabric.js removed); added sitemap, robots, manifest, OG image, 404; `live` flag registry in `src/lib/tools.ts` | all |
+| 2026-11-06 | Batch 1 live: P3, P2, P1, P40, P27 | `/jpg-komprimieren/`, `/bilder-komprimieren/`, `/bild-verkleinern/`, `/hintergrund-entfernen/`, `/heic-in-jpg/` |
+| 2026-11-06 | Batch 2 live: P51, P21, P4, P5, P41 | `/bild-zuschneiden/`, `/bildgroesse-aendern/`, `/png-komprimieren/`, `/gif-komprimieren/`, `/bild-freistellen/` |
 
