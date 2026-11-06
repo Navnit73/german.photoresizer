@@ -104,7 +104,7 @@ export default function SizeChanger() {
                           setWidth(p.w);
                           setHeight(p.h);
                         }}
-                        className={`min-h-11 rounded-xl border px-2 text-left text-xs ${active ? "border-lime-700 bg-lime-50 ring-1 ring-lime-700" : "border-zinc-200 hover:bg-zinc-50"}`}
+                        className={`min-h-11 rounded-xl border px-2 text-left text-xs ${active ? "border-lime-700 bg-lime-50" : "border-zinc-200 hover:bg-zinc-50"}`}
                       >
                         <span className="block font-mono font-semibold text-zinc-900">
                           {p.w} × {p.h}

@@ -31,7 +31,7 @@ export default function ImpressumPage() {
 
         <div className="mt-10 space-y-8 text-sm leading-relaxed text-zinc-700">
           {/* Angaben gemäß DDG */}
-          <section className="rounded-2xl border border-zinc-200 bg-zinc-50 p-6">
+          <section className="border-t border-zinc-200 pt-6">
             <div className="flex items-center gap-2 font-bold text-zinc-900 text-base mb-3">
               <Building2 className="h-5 w-5 text-lime-700" />
               <span>Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG)</span>
@@ -106,7 +106,7 @@ export default function ImpressumPage() {
           </section>
 
           {/* Hinweis Passbilder / amtliche Richtlinien */}
-          <section className="rounded-xl border border-lime-700/20 bg-lime-50/40 p-4 text-xs text-zinc-700">
+          <section className="border-l-2 border-lime-700 py-1 pl-4 text-xs text-zinc-700">
             <div className="flex items-center gap-2 font-semibold text-lime-900 mb-1">
               <ShieldAlert className="h-4 w-4 text-lime-700" /> Wichtiger Hinweis zu amtlichen Passbild-Zuschnitten
             </div>

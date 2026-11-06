@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import BatchTool, { type SourceInfo } from "./BatchTool";
 import { Panel, Segmented, Slider } from "./ui";
 import { encodeCanvas, finishBlob, outputName, renderDecoded, sourceFormat } from "@/lib/image/pipeline";
-import { decodeGif, encodeGif } from "@/lib/image/gif";
+import { gifInWorker } from "@/lib/image/workerClient";
 
 type Preset = "strong" | "balanced" | "high";
 const PRESET_QUALITY: Record<Preset, number> = { strong: 55, balanced: 75, high: 88 };
@@ -32,9 +32,8 @@ export default function ImageCompressor() {
       const exif = await src.exif();
 
       if (src.type === "gif") {
-        const gif = await decodeGif(await src.file.arrayBuffer());
         const g = PRESET_GIF[preset];
-        const out = await encodeGif(gif, { colors: g.colors, tolerance: g.tolerance, frameStep: 1, scale: 1 }, undefined, isStale);
+        const out = await gifInWorker(src.file, { colors: g.colors, tolerance: g.tolerance, frameStep: 1, scale: 1 }, isStale);
         blob = new Blob([out.bytes as Uint8Array<ArrayBuffer>], { type: "image/gif" });
         width = out.width;
         height = out.height;

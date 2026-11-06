@@ -14,20 +14,20 @@ export default function ToolDirectory() {
       {groups.map((g) => (
         <div key={g.id} id={`gruppe-${g.id}`}>
           <h3 className="text-lg font-bold text-zinc-950">{g.homeHeading}</h3>
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-3 grid grid-cols-1 gap-x-8 border-t border-zinc-200 sm:grid-cols-2 lg:grid-cols-3">
             {g.tools.map((t) => {
               const Icon = toolIcon(t.id, t.group);
               return (
                 <Link
                   key={t.id}
                   href={t.path}
-                  className="group flex items-start gap-4 rounded-2xl border border-zinc-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-lime-700/60 hover:shadow-lg hover:shadow-zinc-200/70"
+                  className="group flex items-start gap-3 border-b border-zinc-200 py-4"
                 >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-lime-50 text-lime-800 transition-colors group-hover:bg-lime-700 group-hover:text-white">
+                  <span className="mt-0.5 shrink-0 text-lime-700">
                     <Icon aria-hidden className="h-5 w-5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <h4 className="flex items-center justify-between gap-2 text-base font-semibold text-zinc-950">
+                    <h4 className="flex items-center justify-between gap-2 text-base font-semibold text-zinc-950 group-hover:text-lime-800">
                       {t.name}
                       <ArrowRight aria-hidden className="h-4 w-4 shrink-0 text-zinc-400 transition-all group-hover:translate-x-0.5 group-hover:text-lime-700" />
                     </h4>

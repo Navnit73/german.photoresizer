@@ -1,5 +1,6 @@
 "use client";
 
+import { errorCode, track } from "@/lib/track";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Crop as CropIcon,
@@ -20,7 +21,7 @@ import CropStage from "./tools/CropStage";
 import { useSingleImage } from "./tools/useSingleImage";
 import { Dropzone, ErrorBanner, NumberField, Segmented, Slider, Toggle, btnIcon, btnPrimary, btnSecondary } from "./tools/ui";
 import { IDENTITY, clampRect, fitRatio, orientedSize, renderCrop, safeRect, type Rect, type Transform } from "@/lib/image/transform";
-import { NEUTRAL, applyAdjustments, cssFilter, isNeutral, type Adjustments } from "@/lib/image/filters";
+import { NEUTRAL, cssFilter, isNeutral, type Adjustments } from "@/lib/image/filters";
 import { encodePixels, readPixels, MIME, type OutputFormat } from "@/lib/image/encode";
 import { formatBytes, saveBlob, savingPercent } from "@/lib/image/files";
 import { outputName, sourceFormat } from "@/lib/image/pipeline";
@@ -113,9 +114,7 @@ export default function PhotoEditor() {
   const render = async () => {
     if (!image) throw new Error("Kein Bild");
     const canvas = renderCrop(image.bitmap, image.width, image.height, t, crop, finalW, finalH);
-    const px = readPixels(canvas);
-    if (!isNeutral(adj)) applyAdjustments(px, adj);
-    return encodePixels(px, { format: outFormat, quality, pngMode: "lossless" });
+    return encodePixels(readPixels(canvas), { format: outFormat, quality, pngMode: "lossless" }, isNeutral(adj) ? undefined : adj);
   };
 
   // Real file-size preview on the export tab (debounced).
@@ -142,7 +141,9 @@ export default function PhotoEditor() {
       const data = await render();
       setEstimate({ bytes: data.length, key: settingsKey });
       saveBlob(new Blob([data as Uint8Array<ArrayBuffer>], { type: MIME[outFormat] }), outputName(image.file.name, outFormat, "-bearbeitet"));
+      track("download", { kind: "single", format: outFormat });
     } catch (e) {
+      track("error", { code: errorCode(e) });
       setError(e instanceof Error ? e.message : "Export fehlgeschlagen.");
     } finally {
       setBusy(false);
@@ -172,7 +173,7 @@ export default function PhotoEditor() {
 
   if (!image) {
     return (
-      <div id="editor" className="rounded-3xl border border-zinc-200 bg-white p-3 shadow-xl shadow-zinc-200/60 sm:p-4">
+      <div id="editor">
         {loading ? (
           <div className="flex min-h-72 items-center justify-center text-sm text-zinc-700">
             <Loader2 aria-hidden className="mr-2 h-5 w-5 animate-spin text-lime-700" /> Bild wird geöffnet …
@@ -198,9 +199,9 @@ export default function PhotoEditor() {
   const stale = !estimate || estimate.key !== settingsKey;
 
   return (
-    <div id="editor" className="rounded-3xl border border-zinc-200 bg-white p-3 shadow-xl shadow-zinc-200/60 sm:p-4">
+    <div id="editor">
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <div role="tablist" aria-label="Bearbeitungsschritte" className="flex flex-1 gap-1 overflow-x-auto rounded-2xl bg-zinc-100 p-1">
+        <div role="tablist" aria-label="Bearbeitungsschritte" className="flex flex-1 gap-1 overflow-x-auto rounded-xl bg-zinc-100 p-1">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -211,7 +212,7 @@ export default function PhotoEditor() {
               aria-controls={`panel-${id}`}
               onClick={() => setTab(id)}
               className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-3 text-sm font-medium transition-colors ${
-                tab === id ? "bg-white text-zinc-950 shadow-sm" : "text-zinc-700 hover:text-zinc-950"
+                tab === id ? "bg-white text-zinc-950" : "text-zinc-700 hover:text-zinc-950"
               }`}
             >
               <Icon aria-hidden className={`h-4 w-4 ${tab === id ? "text-lime-700" : ""}`} />
@@ -242,7 +243,7 @@ export default function PhotoEditor() {
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-100 p-3 sm:p-5">
+          <div className="rounded-xl bg-zinc-100 p-3 sm:p-5">
             <CropStage
               source={image.bitmap}
               width={image.width}
@@ -266,7 +267,7 @@ export default function PhotoEditor() {
           )}
         </div>
 
-        <aside className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-4" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
+        <aside className="space-y-4 border-t border-zinc-200 pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
           {tab === "crop" && (
             <>
               <Segmented label="Seitenverhältnis" value={ratioKey} onChange={chooseRatio} columns={4} options={RATIOS.map((r) => ({ value: r.key, label: r.label }))} />
@@ -325,7 +326,7 @@ export default function PhotoEditor() {
                         setLook(l.key);
                         setAdj(l.a);
                       }}
-                      className={`min-h-11 rounded-xl border px-2 text-xs font-medium ${look === l.key ? "border-lime-700 bg-lime-50 text-lime-900 ring-1 ring-lime-700" : "border-zinc-200 text-zinc-800 hover:bg-zinc-50"}`}
+                      className={`min-h-11 rounded-xl border px-2 text-xs font-medium ${look === l.key ? "border-lime-700 bg-lime-50 text-lime-900" : "border-zinc-200 text-zinc-800 hover:bg-zinc-50"}`}
                     >
                       {l.label}
                     </button>

@@ -52,9 +52,9 @@ export function Dropzone({
         setDrag(false);
         handle(e.dataTransfer.files);
       }}
-      className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed text-center transition-colors ${
+      className={`relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed text-center transition-colors ${
         compact ? "px-4 py-6" : "px-5 py-10 sm:py-14"
-      } ${drag ? "border-lime-700 bg-lime-50" : "border-zinc-300 bg-white hover:border-lime-700/70"}`}
+      } ${drag ? "border-solid border-lime-700 bg-lime-100" : "border-lime-700 bg-lime-50 hover:bg-lime-100"}`}
     >
       <input
         ref={inputRef}
@@ -69,15 +69,15 @@ export function Dropzone({
         }}
       />
       {!compact && (
-        <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-lime-50 text-lime-700">
-          <ImagePlus aria-hidden className="h-7 w-7" />
+        <span className="mb-3 text-lime-700">
+          <ImagePlus aria-hidden className="h-8 w-8" />
         </span>
       )}
       <p className={`${compact ? "text-sm" : "text-lg"} font-semibold text-zinc-950`}>{title}</p>
       <p className="mt-1 text-sm text-zinc-600">{formats}</p>
       <label
         htmlFor={id}
-        className={`mt-4 inline-flex min-h-12 cursor-pointer items-center gap-2 rounded-xl bg-lime-700 px-6 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-lime-800 focus-within:outline-2 ${
+        className={`mt-4 inline-flex min-h-12 cursor-pointer items-center gap-2 rounded-xl bg-lime-700 px-6 text-sm font-semibold text-white transition-colors hover:bg-lime-800 focus-within:outline-2 ${
           compact ? "min-h-11 px-4" : ""
         }`}
         onKeyDown={(e) => {
@@ -96,7 +96,7 @@ export function Dropzone({
         <p className="mt-4 hidden text-xs text-zinc-600 sm:block">oder Dateien hierher ziehen</p>
       )}
       {!compact && (
-        <p className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
+        <p className="mt-5 inline-flex items-center gap-1.5 text-xs font-medium text-zinc-700">
           <ShieldCheck aria-hidden className="h-3.5 w-3.5 text-lime-700" />
           Verarbeitung lokal im Browser – kein Upload
         </p>
@@ -188,7 +188,7 @@ export function Segmented<T extends string | number>({
               disabled={o.disabled}
               onClick={() => onChange(o.value)}
               className={`flex min-h-11 flex-col items-center justify-center rounded-xl border px-2 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-                active ? "border-lime-700 bg-lime-50 text-lime-900 ring-1 ring-lime-700" : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 hover:bg-zinc-50"
+                active ? "border-lime-700 bg-lime-50 text-lime-900" : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-300 hover:bg-zinc-50"
               }`}
             >
               <span className="leading-tight">{o.label}</span>
@@ -227,9 +227,9 @@ export function Toggle({
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className={`relative mt-0.5 inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors ${checked ? "bg-lime-700" : "bg-zinc-300"}`}
+        className={`relative mt-0.5 inline-flex h-7 w-12 shrink-0 items-center rounded-lg transition-colors ${checked ? "bg-lime-700" : "bg-zinc-300"}`}
       >
-        <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-6" : "translate-x-1"}`} />
+        <span className={`inline-block h-5 w-5 rounded-md bg-white transition-transform ${checked ? "translate-x-6" : "translate-x-1"}`} />
       </button>
     </div>
   );
@@ -259,7 +259,7 @@ export function NumberField({
       <label htmlFor={id} className="mb-1 block text-xs font-medium text-zinc-700">
         {label}
       </label>
-      <div className="flex items-center rounded-xl border border-zinc-300 bg-white focus-within:border-lime-700 focus-within:ring-2 focus-within:ring-lime-700/20">
+      <div className="flex items-center rounded-xl border border-zinc-300 bg-white focus-within:border-lime-700">
         <input
           id={id}
           type="number"
@@ -284,7 +284,7 @@ export function NumberField({
 
 export function Panel({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5">
+    <div className="space-y-4 border-t border-zinc-200 pt-4">
       {title && <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{title}</p>}
       {children}
     </div>
@@ -306,7 +306,7 @@ export function ErrorBanner({ children, onClose }: { children: React.ReactNode; 
 }
 
 export const btnPrimary =
-  "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-lime-700 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-lime-800 disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-lime-700 px-5 text-sm font-semibold text-white transition-colors hover:bg-lime-800 disabled:cursor-not-allowed disabled:opacity-50";
 export const btnSecondary =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50";
 export const btnIcon =
@@ -360,8 +360,8 @@ export function CompareSlider({
             <img src={before} alt="" aria-hidden className="block h-full w-full object-contain" draggable={false} />
           </div>
           <div className="pointer-events-none absolute inset-y-0" style={{ left: `${pos}%` }}>
-            <div className="h-full w-0.5 -translate-x-1/2 bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.15)]" />
-            <div className="absolute top-1/2 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-zinc-200 bg-white text-xs font-bold text-zinc-700 shadow-md">
+            <div className="h-full w-0.5 -translate-x-1/2 bg-lime-700" />
+            <div className="absolute top-1/2 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-lg border border-zinc-200 bg-white text-xs font-bold text-zinc-700">
               ⇆
             </div>
           </div>

@@ -35,7 +35,7 @@ const FAQS: FaqItem[] = [
   },
   {
     q: "Werden meine Bilder gespeichert?",
-    a: "Nein. Ihr Foto wird ausschließlich in Ihrem Browser verarbeitet und weder an unsere noch an fremde Server übertragen. Es gibt keine serverseitige Verarbeitung und keine Speicherung. Aus dem Internet geladen werden nur die Modelldateien und die ONNX-Laufzeitumgebung – Ihre Bilddaten sind darin nicht enthalten.",
+    a: "Nein. Ihr Foto wird ausschließlich in Ihrem Browser verarbeitet und weder an unsere noch an fremde Server übertragen. Es gibt keine serverseitige Verarbeitung und keine Speicherung. Von unserem Server geladen werden nur die Modelldateien und die ONNX-Laufzeitumgebung – Ihre Bilddaten sind darin nicht enthalten.",
   },
 ];
 
@@ -157,10 +157,11 @@ export default function Page() {
       <h2>Datenschutz bei der Hintergrundentfernung</h2>
       <p>
         Viele Online-Dienste schicken Ihr Foto zur Berechnung auf einen Server. Hier ist das nicht der Fall: Das KI-Modell
-        läuft vollständig in Ihrem Browser, Ihr Bild verlässt das Gerät zu keinem Zeitpunkt. Aus dem Internet geladen
-        werden nur die Modelldateien von Hugging Face und die ONNX-Laufzeitumgebung über jsDelivr. Dabei wird, wie bei
-        jedem Seitenaufruf, Ihre IP-Adresse an diese Anbieter übermittelt – Ihre Bilddaten jedoch nicht. Details finden
-        Sie in unserer Datenschutzerklärung.
+        läuft vollständig in Ihrem Browser, Ihr Bild verlässt das Gerät zu keinem Zeitpunkt. Die Modelldateien und die
+        ONNX-Laufzeitumgebung liefern wir selbst aus – es werden keine Drittanbieter wie Hugging Face oder ein externes
+        Content-Delivery-Netzwerk kontaktiert. Das entspricht dem Grundgedanken von DSGVO und revDSG: Daten, die gar nicht
+        erst übertragen werden, können auch nicht in falsche Hände geraten. Details finden Sie in unserer
+        Datenschutzerklärung.
       </p>
 
       <TrustList

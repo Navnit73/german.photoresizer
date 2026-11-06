@@ -3,6 +3,16 @@
 @theme {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* DESIGN.md: flat UI. Radius is capped at 10px; shadows are disabled entirely. */
+  --radius-xl: 10px;
+  --radius-2xl: 10px;
+  --radius-3xl: 10px;
+  --radius-4xl: 10px;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
 }
 
 @layer base {
@@ -168,17 +178,17 @@
 }
 .range::-webkit-slider-runnable-track {
   height: 6px;
-  border-radius: 9999px;
+  border-radius: 3px;
   background: linear-gradient(to right, #4d7c0f var(--fill, 50%), #e4e4e7 var(--fill, 50%));
 }
 .range::-moz-range-track {
   height: 6px;
-  border-radius: 9999px;
+  border-radius: 3px;
   background: #e4e4e7;
 }
 .range::-moz-range-progress {
   height: 6px;
-  border-radius: 9999px;
+  border-radius: 3px;
   background: #4d7c0f;
 }
 .range::-webkit-slider-thumb {
@@ -186,15 +196,14 @@
   margin-top: -9px;
   height: 24px;
   width: 24px;
-  border-radius: 9999px;
+  border-radius: 8px;
   background: #ffffff;
   border: 2px solid #4d7c0f;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
 }
 .range::-moz-range-thumb {
   height: 20px;
   width: 20px;
-  border-radius: 9999px;
+  border-radius: 8px;
   background: #ffffff;
   border: 2px solid #4d7c0f;
 }

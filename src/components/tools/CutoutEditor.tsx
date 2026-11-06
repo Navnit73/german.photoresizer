@@ -1,5 +1,6 @@
 "use client";
 
+import { errorCode, track } from "@/lib/track";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   Brush,
@@ -14,6 +15,10 @@ import {
   Sparkles,
   Undo2,
   Wand2,
+  Hand,
+  ZoomIn,
+  ZoomOut,
+  Maximize,
 } from "lucide-react";
 import { useSingleImage, type LoadedImage } from "./useSingleImage";
 import { Dropzone, ErrorBanner, Panel, Segmented, Slider, Toggle, btnIcon, btnPrimary, btnSecondary } from "./ui";
@@ -24,7 +29,7 @@ import { encodePixels } from "@/lib/image/encode";
 import { baseName, formatBytes, saveBlob } from "@/lib/image/files";
 
 type Variant = "auto" | "manual";
-type Tool = "brush" | "lasso" | "polygon";
+type Tool = "brush" | "lasso" | "polygon" | "pan";
 type Bg = "transparent" | "white" | "color" | "blur" | "image";
 type Format = "png" | "webp" | "jpeg";
 type Pt = { x: number; y: number };
@@ -88,12 +93,19 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
   const [maskEmpty, setMaskEmpty] = useState(true);
   const [avail, setAvail] = useState(0);
   const [hasBgImage, setHasBgImage] = useState(false);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState<Pt>({ x: 0, y: 0 });
+  const [spaceDown, setSpaceDown] = useState(false);
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const displayRef = useRef<HTMLCanvasElement>(null);
   const bgImage = useRef<ImageBitmap | null>(null);
   const stroke = useRef<{ last: Pt; moved: boolean } | null>(null);
   const raf = useRef(0);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const pointers = useRef(new Map<number, Pt>());
+  const gesture = useRef<{ type: "pinch"; d0: number; mid0: Pt; z0: number; pan0: Pt } | { type: "pan"; start: Pt; pan0: Pt } | null>(null);
+  const blockStroke = useRef(false);
 
   /* ------------------------------ setup ------------------------------ */
 
@@ -128,6 +140,8 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
     setAiProgress(null);
     setUndoCount(0);
     setMaskEmpty(true);
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
   }
 
   useLayoutEffect(() => {
@@ -141,6 +155,41 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
 
   const vh = typeof window !== "undefined" ? Math.min(560, Math.round(window.innerHeight * 0.62)) : 560;
   const k = work && avail > 0 ? Math.min(avail / work.w, vh / work.h) : 0;
+  /** Display scale (CSS px per work px) including zoom. */
+  const kz = k * zoom;
+  const MAX_ZOOM = 8;
+
+  const clampPan = useCallback(
+    (p: Pt, z: number): Pt => {
+      if (!work) return p;
+      const vw = work.w * k;
+      const vhh = work.h * k;
+      return { x: Math.min(0, Math.max(vw - vw * z, p.x)), y: Math.min(0, Math.max(vhh - vhh * z, p.y)) };
+    },
+    [work, k],
+  );
+
+  /** Zoom keeping the viewport point (vx, vy) fixed. */
+  const zoomAt = useCallback(
+    (next: number, vx?: number, vy?: number) => {
+      if (!work) return;
+      const z = Math.min(MAX_ZOOM, Math.max(1, next));
+      const cx = vx ?? (work.w * k) / 2;
+      const cy = vy ?? (work.h * k) / 2;
+      setPan((p) => {
+        const ix = (cx - p.x) / (k * zoom);
+        const iy = (cy - p.y) / (k * zoom);
+        return clampPan({ x: cx - ix * k * z, y: cy - iy * k * z }, z);
+      });
+      setZoom(z);
+    },
+    [work, k, zoom, clampPan],
+  );
+
+  const viewportPoint = (e: { clientX: number; clientY: number }): Pt => {
+    const r = viewportRef.current!.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  };
 
   /* ----------------------------- rendering ---------------------------- */
 
@@ -162,13 +211,14 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
     cancelAnimationFrame(raf.current);
     raf.current = requestAnimationFrame(() => {
       const d = displayRef.current;
-      if (!d || !work || k <= 0) return;
+      if (!d || !work || kz <= 0) return;
       const wi = work.img;
       const em = work.eff;
       const sc = work.scratch;
       const dpr = Math.min(2, window.devicePixelRatio || 1);
-      const dw = Math.max(1, Math.round(wi.width * k * dpr));
-      const dh = Math.max(1, Math.round(wi.height * k * dpr));
+      const scale = Math.min(kz * dpr, 2);
+      const dw = Math.max(1, Math.round(wi.width * scale));
+      const dh = Math.max(1, Math.round(wi.height * scale));
       if (d.width !== dw || d.height !== dh) {
         d.width = dw;
         d.height = dh;
@@ -208,7 +258,7 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
       sctx.globalCompositeOperation = "source-over";
       ctx.drawImage(sc, 0, 0, dw, dh);
     });
-  }, [k, showOriginal, phase, preview, bg, bgColor, work, hasBgImage]);
+  }, [kz, showOriginal, phase, preview, bg, bgColor, work, hasBgImage]);
 
   useEffect(() => {
     refreshEffective();
@@ -284,10 +334,31 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
 
   const brushAdds = add;
 
+  const startPan = (e: React.PointerEvent) => {
+    gesture.current = { type: "pan", start: viewportPoint(e), pan0: pan };
+  };
+
   const onDown = (e: React.PointerEvent) => {
-    if (phase !== "edit" || e.button > 0) return;
+    if (phase !== "edit") return;
     e.preventDefault();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    pointers.current.set(e.pointerId, viewportPoint(e));
+    if (pointers.current.size === 2) {
+      // Second finger: switch to pinch-zoom, discard the stroke just started.
+      if (stroke.current && tool === "brush") undo();
+      stroke.current = null;
+      setLassoPts([]);
+      blockStroke.current = true;
+      const [a, b] = [...pointers.current.values()];
+      gesture.current = { type: "pinch", d0: Math.hypot(a.x - b.x, a.y - b.y), mid0: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, z0: zoom, pan0: pan };
+      return;
+    }
+    if (pointers.current.size > 2 || blockStroke.current) return;
+    if (tool === "pan" || spaceDown || e.button === 1) {
+      startPan(e);
+      return;
+    }
+    if (e.button > 0) return;
     const p = toWork(e);
     if (tool === "brush") {
       snapshot();
@@ -299,7 +370,7 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
       stroke.current = { last: p, moved: false };
     } else {
       // polygon: close when clicking near the first point
-      if (poly.length >= 3 && Math.hypot(p.x - poly[0].x, p.y - poly[0].y) * k < 14) {
+      if (poly.length >= 3 && Math.hypot(p.x - poly[0].x, p.y - poly[0].y) * kz < 14) {
         fillPolygon(poly, add);
         setPoly([]);
       } else {
@@ -320,6 +391,23 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
   };
 
   const onMove = (e: React.PointerEvent) => {
+    if (pointers.current.has(e.pointerId)) pointers.current.set(e.pointerId, viewportPoint(e));
+    const g = gesture.current;
+    if (g?.type === "pinch" && pointers.current.size >= 2 && work) {
+      const [a, b] = [...pointers.current.values()];
+      const z = Math.min(MAX_ZOOM, Math.max(1, (g.z0 * Math.hypot(a.x - b.x, a.y - b.y)) / Math.max(1, g.d0)));
+      const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      const ix = (g.mid0.x - g.pan0.x) / (k * g.z0);
+      const iy = (g.mid0.y - g.pan0.y) / (k * g.z0);
+      setZoom(z);
+      setPan(clampPan({ x: mid.x - ix * k * z, y: mid.y - iy * k * z }, z));
+      return;
+    }
+    if (g?.type === "pan") {
+      const v = viewportPoint(e);
+      setPan(clampPan({ x: g.pan0.x + v.x - g.start.x, y: g.pan0.y + v.y - g.start.y }, zoom));
+      return;
+    }
     const p = toWork(e);
     setHover(p);
     const s = stroke.current;
@@ -334,14 +422,20 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
       s.moved = true;
       refreshEffectiveFast();
     } else if (tool === "lasso") {
-      if (Math.hypot(p.x - s.last.x, p.y - s.last.y) * k > 3) {
+      if (Math.hypot(p.x - s.last.x, p.y - s.last.y) * kz > 3) {
         s.last = p;
         setLassoPts((pts) => [...pts, p]);
       }
     }
   };
 
-  const onUp = () => {
+  const onUp = (e: React.PointerEvent) => {
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size === 0) blockStroke.current = false;
+    if (gesture.current) {
+      if (pointers.current.size < 2) gesture.current = null;
+      return;
+    }
     const s = stroke.current;
     stroke.current = null;
     if (!s) return;
@@ -353,7 +447,20 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
   };
 
   useEffect(() => {
+    const typing = (t: EventTarget | null) => t instanceof HTMLElement && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName);
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space") setSpaceDown(false);
+    };
     const onKey = (e: KeyboardEvent) => {
+      if (phase === "edit" && !typing(e.target)) {
+        if (e.code === "Space" && !e.repeat && document.activeElement === document.body) {
+          e.preventDefault();
+          setSpaceDown(true);
+        }
+        if ((e.key === "+" || e.key === "=") && !e.metaKey && !e.ctrlKey) zoomAt(zoom * 1.25);
+        if (e.key === "-" && !e.metaKey && !e.ctrlKey) zoomAt(zoom / 1.25);
+        if (e.key === "0" && !e.metaKey && !e.ctrlKey) zoomAt(1);
+      }
       if (e.key === "Escape") setPoly([]);
       if (e.key === "Enter" && poly.length >= 3) {
         fillPolygon(poly, add);
@@ -361,8 +468,30 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
       }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("keyup", onKeyUp);
+    };
   });
+
+  // Ctrl/⌘ + wheel (and trackpad pinch) zooms; plain wheel pans while zoomed.
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el || phase !== "edit") return;
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const r = el.getBoundingClientRect();
+        zoomAt(zoom * Math.exp(-e.deltaY * 0.01), e.clientX - r.left, e.clientY - r.top);
+      } else if (zoom > 1) {
+        e.preventDefault();
+        setPan((p) => clampPan({ x: p.x - e.deltaX, y: p.y - e.deltaY }, zoom));
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [phase, zoom, zoomAt, clampPan, work, k]);
 
   /* -------------------------------- AI -------------------------------- */
 
@@ -391,6 +520,7 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
       afterEdit();
     } catch (e) {
       console.error(e);
+      track("error", { code: "model_load" });
       setError(
         e instanceof Error && /fetch|network|load/i.test(e.message)
           ? "Das KI-Modell konnte nicht geladen werden. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
@@ -465,7 +595,9 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
       setLastSize(blob.size);
       const suffix = variant === "auto" ? "-ohne-hintergrund" : "-freigestellt";
       saveBlob(blob, `${baseName(image.file.name)}${suffix}.${effFormat === "jpeg" ? "jpg" : effFormat}`);
+      track("download", { kind: "single", format: effFormat });
     } catch (e) {
+      track("error", { code: errorCode(e) });
       setError(e instanceof Error ? e.message : "Export fehlgeschlagen.");
     } finally {
       setExporting(false);
@@ -482,6 +614,7 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
         }),
       });
       await navigator.clipboard.write([item]);
+      track("download", { kind: "clipboard", format: "png" });
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -505,7 +638,7 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
 
   if (!image) {
     return (
-      <div className="rounded-3xl border border-zinc-200 bg-white p-3 shadow-sm sm:p-4">
+      <div>
         {loading ? (
           <div className="flex min-h-64 items-center justify-center text-sm text-zinc-700">
             <Loader2 aria-hidden className="mr-2 h-5 w-5 animate-spin text-lime-700" /> Bild wird geöffnet …
@@ -535,7 +668,7 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
           key={m}
           type="button"
           onClick={() => runAi(m)}
-          className="flex min-h-20 flex-col items-start rounded-2xl border border-zinc-200 bg-white p-4 text-left transition-colors hover:border-lime-700 hover:bg-lime-50/50"
+          className="flex min-h-20 flex-col items-start rounded-xl border border-zinc-200 bg-white p-4 text-left transition-colors hover:border-lime-700 hover:bg-lime-50/50"
         >
           <span className="flex items-center gap-2 text-sm font-semibold text-zinc-950">
             <Sparkles aria-hidden className="h-4 w-4 text-lime-700" /> {MODELS[m].label}
@@ -548,10 +681,12 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
     </div>
   );
 
-  const cursorStyle = tool === "brush" && hover && k > 0 && phase === "edit" ? { left: hover.x * k, top: hover.y * k, width: brushSize * k, height: brushSize * k } : null;
+  const panning = tool === "pan" || spaceDown;
+  const cursorStyle =
+    tool === "brush" && !panning && hover && kz > 0 && phase === "edit" ? { left: hover.x * kz, top: hover.y * kz, width: brushSize * kz, height: brushSize * kz } : null;
 
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-3 shadow-sm sm:p-4">
+    <div>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-3">
           {phase === "edit" && (
@@ -568,6 +703,16 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
               )}
               <button type="button" onClick={() => setTool("brush")} aria-pressed={tool === "brush"} className={`${btnSecondary} ${tool === "brush" ? "border-lime-700 bg-lime-50 text-lime-900" : ""}`}>
                 <Brush aria-hidden className="h-4 w-4" /> Pinsel
+              </button>
+              <button
+                type="button"
+                onClick={() => setTool("pan")}
+                aria-pressed={tool === "pan"}
+                className={`${btnIcon} ${tool === "pan" ? "border-lime-700 bg-lime-50 text-lime-900" : ""}`}
+                aria-label="Ansicht verschieben (Hand, auch Leertaste gedrückt halten)"
+                title="Verschieben (Leertaste)"
+              >
+                <Hand aria-hidden className="h-4 w-4" />
               </button>
               <div className="flex overflow-hidden rounded-xl border border-zinc-300" role="radiogroup" aria-label="Modus">
                 <button type="button" role="radio" aria-checked={add} onClick={() => setAdd(true)} className={`min-h-11 px-3 text-sm font-medium ${add ? "bg-lime-700 text-white" : "bg-white text-zinc-700 hover:bg-zinc-50"}`}>
@@ -605,13 +750,19 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
             </div>
           )}
 
-          <div className={`rounded-2xl border border-zinc-200 p-3 sm:p-5 ${preview === "cutout" && phase === "edit" && bg === "transparent" ? "bg-zinc-100" : "bg-zinc-100"}`}>
+          <div className={`rounded-xl p-3 sm:p-5 ${preview === "cutout" && phase === "edit" && bg === "transparent" ? "bg-zinc-100" : "bg-zinc-100"}`}>
             <div ref={wrapRef} className="flex w-full justify-center">
               {work && k > 0 && (
-                <div className="relative" style={{ width: work.w * k, height: work.h * k }}>
+                <div ref={viewportRef} className="relative overflow-hidden" style={{ width: work.w * k, height: work.h * k }}>
+                  <div
+                    className="absolute left-0 top-0 origin-top-left"
+                    style={{ width: work.w * kz, height: work.h * kz, transform: `translate(${pan.x}px, ${pan.y}px)` }}
+                  >
                   <canvas
                     ref={displayRef}
-                    className={`block h-full w-full touch-none ${preview === "cutout" ? "bg-transparency-grid" : ""} ${phase === "edit" ? (tool === "brush" ? "cursor-none" : "cursor-crosshair") : ""}`}
+                    className={`block h-full w-full touch-none ${preview === "cutout" ? "bg-transparency-grid" : ""} ${
+                      phase === "edit" ? (panning ? "cursor-grab active:cursor-grabbing" : tool === "brush" ? "cursor-none" : "cursor-crosshair") : ""
+                    }`}
                     onPointerDown={onDown}
                     onPointerMove={onMove}
                     onPointerUp={onUp}
@@ -628,7 +779,7 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
                   />
                   <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox={`0 0 ${work.w} ${work.h}`} preserveAspectRatio="none" aria-hidden>
                     {lassoPts.length > 1 && (
-                      <polyline points={lassoPts.map((p) => `${p.x},${p.y}`).join(" ")} fill="rgba(101,163,13,0.15)" stroke="#a3e635" strokeWidth={2 / k} strokeDasharray={`${6 / k} ${4 / k}`} />
+                      <polyline points={lassoPts.map((p) => `${p.x},${p.y}`).join(" ")} fill="rgba(101,163,13,0.15)" stroke="#a3e635" strokeWidth={2 / kz} strokeDasharray={`${6 / kz} ${4 / kz}`} />
                     )}
                     {poly.length > 0 && (
                       <>
@@ -636,20 +787,37 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
                           points={[...poly, ...(hover ? [hover] : [])].map((p) => `${p.x},${p.y}`).join(" ")}
                           fill="rgba(101,163,13,0.15)"
                           stroke="#a3e635"
-                          strokeWidth={2 / k}
+                          strokeWidth={2 / kz}
                         />
                         {poly.map((p, i) => (
-                          <circle key={i} cx={p.x} cy={p.y} r={(i === 0 ? 7 : 4) / k} fill={i === 0 ? "#4d7c0f" : "#fff"} stroke="#4d7c0f" strokeWidth={1.5 / k} />
+                          <circle key={i} cx={p.x} cy={p.y} r={(i === 0 ? 7 : 4) / kz} fill={i === 0 ? "#4d7c0f" : "#fff"} stroke="#4d7c0f" strokeWidth={1.5 / kz} />
                         ))}
                       </>
                     )}
                   </svg>
                   {cursorStyle && (
                     <div
-                      className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.5)]"
+                      className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white outline outline-1 outline-black/50"
                       style={cursorStyle}
                       aria-hidden
                     />
+                  )}
+                  </div>
+                  {phase === "edit" && (
+                    <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-xl border border-zinc-200 bg-white/95 p-1 shadow-sm">
+                      <button type="button" onClick={() => zoomAt(zoom / 1.5)} disabled={zoom <= 1} className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-zinc-700 hover:bg-zinc-100 disabled:opacity-40" aria-label="Verkleinern (−)" title="Verkleinern (−)">
+                        <ZoomOut aria-hidden className="h-4 w-4" />
+                      </button>
+                      <span className="w-12 text-center font-mono text-xs font-semibold text-zinc-800" aria-live="polite">
+                        {Math.round(zoom * 100)} %
+                      </span>
+                      <button type="button" onClick={() => zoomAt(zoom * 1.5)} disabled={zoom >= MAX_ZOOM} className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-zinc-700 hover:bg-zinc-100 disabled:opacity-40" aria-label="Vergrößern (+)" title="Vergrößern (+)">
+                        <ZoomIn aria-hidden className="h-4 w-4" />
+                      </button>
+                      <button type="button" onClick={() => zoomAt(1)} disabled={zoom === 1} className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-zinc-700 hover:bg-zinc-100 disabled:opacity-40" aria-label="Ganzes Bild anzeigen (0)" title="Einpassen (0)">
+                        <Maximize aria-hidden className="h-4 w-4" />
+                      </button>
+                    </div>
                   )}
                   {phase !== "edit" && (
                     <div className="absolute inset-0 flex items-center justify-center bg-white/75 p-4 backdrop-blur-sm">
@@ -716,7 +884,7 @@ export default function CutoutEditor({ variant }: { variant: Variant }) {
             </Panel>
           )}
           {phase === "edit" && (
-            <div className="space-y-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+            <div className="space-y-3 border-t border-zinc-200 pt-4">
               <Segmented
                 label="Hintergrund"
                 value={bg === "image" && !hasBgImage ? "transparent" : bg}

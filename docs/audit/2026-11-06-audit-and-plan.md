@@ -90,9 +90,14 @@ All findings in §1–§4 are fixed. §5 (legal) needs owner input.
 
 **Content:** article + FAQ is 1.012–1.077 words on all 10 tool pages. The homepage is ≈ 955 words because only 10 tools are live; it grows with every published batch.
 
-### Follow-ups (not blocking)
-- Move codec and AI work into a Web Worker to improve INP on large batches. It currently runs on the main thread, with yields between files.
-- Self-host AI models and the ONNX runtime (`NEXT_PUBLIC_MODEL_HOST`, `env.backends.onnx.wasm.wasmPaths`) so no third-party requests remain.
-- Add zoom/pan to the cut-out editor for detailed brush work.
-- Add tool usage events (upload / download / error) once a cookieless analytics tool is chosen (checklist #44).
-- Add "Über uns" / methodology page for E-E-A-T (checklist #26).
+### Follow-ups — done 2026-11-06 (second pass)
+- **Web Worker:** WASM encoding, colour adjustments and GIF optimisation run in `src/lib/image/image.worker.ts` (client: `workerClient.ts`). If Workers or OffscreenCanvas are missing, the same code runs on the main thread. The worker bundle must never import `encode.ts` / `workerClient.ts` (self-referencing worker → Turbopack deadlock).
+- **Self-hosted AI:** models are in `public/models/`, ONNX Runtime WASM in `public/vendor/ort/`. `scripts/fetch-ai-assets.mjs` fetches them and runs automatically as `predev` / `prebuild`; both folders are gitignored (≈ 208 MB). `allowRemoteModels = false`, so there is no fallback to Hugging Face. The smoke test asserts zero third-party requests, including during the AI run. The Datenschutz §4 and P40 copy are updated.
+- **Zoom in the cut-out editor:** zoom range 100–800 %, via +/−/fit buttons, keys `+` `−` `0`, Ctrl/⌘ + wheel and trackpad pinch. Pan with the hand tool, held Space, middle mouse, wheel while zoomed, or two-finger pinch/pan on touch.
+- **Usage tracking:** cookieless. `track()` in `src/lib/track.ts` sends a beacon to `/api/event` for upload/download/error, and skips sending under DNT/GPC. The server validates each event and logs one JSON line `{"type":"tool_event",…}` without IP or user agent. It forwards server-side to Plausible only if `PLAUSIBLE_DOMAIN` is set. Datenschutz §5 is added.
+- **Über uns:** `/ueber-uns/` (AboutPage schema) covers methodology, quality principles, the open-source/licence credits (incl. LGPL notice for libheif) and contact. It is linked in the footer and listed in the sitemap.
+
+### Deployment notes
+- The build host needs internet access to huggingface.co during `prebuild`, unless `public/models` is cached or `SKIP_AI_ASSETS=1` is set together with `NEXT_PUBLIC_MODEL_HOST` (own CDN, same folder layout).
+- The host must serve a ≈ 115 MB static file (`BiRefNet_lite …/model_fp16.onnx`). Check per-file limits of your hosting/CDN; otherwise put the models on your own bucket via `NEXT_PUBLIC_MODEL_HOST`.
+- Read tool statistics from the server log (`grep tool_event`), or set `PLAUSIBLE_DOMAIN` (+ optional `PLAUSIBLE_HOST` for self-hosted Plausible).

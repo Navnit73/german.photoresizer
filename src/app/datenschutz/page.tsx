@@ -6,7 +6,7 @@ import { buildMetadata } from "@/lib/seo";
 export const metadata: Metadata = buildMetadata({
   title: "Datenschutzerklärung",
   description:
-    "Datenschutz nach DSGVO und Schweizer revDSG: Bilder werden lokal im Browser verarbeitet und nicht hochgeladen. Informationen zu Logfiles und KI-Modellen.",
+    "Datenschutz nach DSGVO und Schweizer revDSG: Bilder werden lokal im Browser verarbeitet und nicht hochgeladen. Keine Drittanbieter, keine Tracking-Cookies.",
   path: "/datenschutz/",
 });
 
@@ -30,7 +30,7 @@ export default function DatenschutzPage() {
             { icon: EyeOff, h: "Ohne Benutzerkonto", p: "Keine Registrierung, keine E-Mail-Adresse, keine Nutzerprofile." },
             { icon: Cookie, h: "Kein Tracking", p: "Keine Analyse- oder Werbe-Cookies." },
           ].map(({ icon: Icon, h, p }) => (
-            <div key={h} className="rounded-2xl border border-lime-700/20 bg-lime-50/50 p-4">
+            <div key={h} className="border-t-2 border-lime-700 pt-3">
               <Icon aria-hidden className="mb-2 h-6 w-6 text-lime-700" />
               <p className="text-sm font-bold text-zinc-900">{h}</p>
               <p className="mt-1 text-xs leading-snug text-zinc-700">{p}</p>
@@ -73,34 +73,38 @@ export default function DatenschutzPage() {
             Tagen gelöscht und nicht mit anderen Datenquellen zusammengeführt.
           </p>
 
-          <h2>4. KI-Werkzeuge: Nachladen von Modellen und Laufzeitbibliotheken</h2>
+          <h2>4. KI-Werkzeuge: Modelle und Laufzeitbibliotheken</h2>
           <p>
-            Die Werkzeuge „Hintergrund entfernen“ und „Bild freistellen“ nutzen KI-Modelle, die ebenfalls lokal in Ihrem Browser ausgeführt
-            werden. Ihr Foto wird dabei <strong>nicht</strong> übertragen. Damit das Modell lokal laufen kann, lädt Ihr Browser beim ersten
-            Einsatz folgende Dateien von Drittanbietern:
-          </p>
-          <ul>
-            <li>
-              <strong>Modelldateien</strong> von Hugging Face (Hugging Face, Inc., USA) über <code>huggingface.co</code> und dessen
-              Content-Delivery-Netzwerk.
-            </li>
-            <li>
-              <strong>ONNX Runtime Web</strong> (WebAssembly-Laufzeit) über das Content-Delivery-Netzwerk <code>cdn.jsdelivr.net</code>.
-            </li>
-          </ul>
-          <p>
-            Bei diesen Abrufen erhalten die Anbieter technisch bedingt Ihre IP-Adresse sowie Browser-Informationen; eine Übermittlung in die USA
-            ist dabei möglich. Die Abrufe erfolgen erst, wenn Sie in einem KI-Werkzeug aktiv ein Modell auswählen. Rechtsgrundlage ist Art. 6 Abs.
-            1 lit. f DSGVO (Bereitstellung der von Ihnen gewünschten Funktion). Die geladenen Dateien speichert Ihr Browser im Cache, damit sie
-            nicht erneut heruntergeladen werden müssen; Sie können sie jederzeit über die Browser-Einstellungen löschen.
+            Die Werkzeuge „Hintergrund entfernen“ und „Bild freistellen“ nutzen KI-Modelle (MODNet bzw. BiRefNet lite), die lokal in Ihrem
+            Browser ausgeführt werden. Ihr Foto wird dabei <strong>nicht</strong> übertragen. Die dafür nötigen Modelldateien und die
+            WebAssembly-Laufzeit (ONNX Runtime Web) werden – ebenso wie der HEIC-Decoder des Werkzeugs „HEIC in JPG umwandeln“ – ausschließlich
+            von unserem eigenen Server ausgeliefert. Es findet dabei keine Verbindung zu Drittanbietern statt.
           </p>
           <p>
-            Ebenso lädt das Werkzeug „HEIC in JPG umwandeln“ einen HEIC-Decoder nach – dieser wird von unserem eigenen Server ausgeliefert.
+            Die Modelldateien werden erst geladen, wenn Sie in einem KI-Werkzeug aktiv ein Modell auswählen. Ihr Browser speichert sie
+            anschließend im Cache, damit sie nicht erneut heruntergeladen werden müssen; Sie können sie jederzeit über die Browser-Einstellungen
+            löschen.
           </p>
 
-          <h2>5. Cookies und lokale Speicherung</h2>
+          <h2>5. Anonyme Nutzungsstatistik der Werkzeuge</h2>
           <p>
-            Wir setzen keine Cookies zu Analyse-, Marketing- oder Werbezwecken ein und binden keine Tracking-Dienste ein. Schriftarten werden
+            Um die Werkzeuge zu verbessern, zählen wir ohne Cookies und ohne Zugriff auf Ihr Endgerät, wie oft Funktionen genutzt werden. Dabei
+            sendet Ihr Browser beim Hinzufügen von Dateien, beim Herunterladen und bei Fehlern eine kurze Meldung an unseren eigenen Server, zum
+            Beispiel: Werkzeug „/jpg-komprimieren/“, Ereignis „Download“, Anzahl der Dateien, Ausgabeformat.
+          </p>
+          <ul>
+            <li>Es werden keine Bilder, Dateinamen oder Bildinhalte übermittelt.</li>
+            <li>Die IP-Adresse wird für diese Statistik nicht gespeichert; es werden keine Nutzerprofile gebildet.</li>
+            <li>Hat Ihr Browser „Do Not Track“ oder „Global Privacy Control“ aktiviert, wird nichts gesendet.</li>
+          </ul>
+          <p>
+            Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Fehlerbehebung und Verbesserung des Angebots). Da keine
+            Informationen auf Ihrem Endgerät gespeichert oder ausgelesen werden, ist keine Einwilligung nach § 25 TDDDG erforderlich.
+          </p>
+
+          <h2>6. Cookies und lokale Speicherung</h2>
+          <p>
+            Wir setzen keine Cookies zu Analyse-, Marketing- oder Werbezwecken ein und binden keine Tracking-Dienste Dritter ein. Schriftarten werden
             von unserem eigenen Server geladen, nicht von Google.
           </p>
           <p>
@@ -108,7 +112,7 @@ export default function DatenschutzPage() {
             unbedingt erforderlich (§ 25 Abs. 2 Nr. 2 TDDDG, § 165 Abs. 3 TKG 2021); eine gesonderte Einwilligung ist dafür nicht notwendig.
           </p>
 
-          <h2>6. Ihre Rechte</h2>
+          <h2>7. Ihre Rechte</h2>
           <p>Sie haben im Rahmen der gesetzlichen Bestimmungen folgende Rechte bezüglich Ihrer personenbezogenen Daten:</p>
           <ul>
             <li>Auskunft (Art. 15 DSGVO, Art. 25 revDSG)</li>
@@ -124,7 +128,7 @@ export default function DatenschutzPage() {
             <li>Schweiz: Eidgenössischer Datenschutz- und Öffentlichkeitsbeauftragter (EDÖB), Feldeggweg 1, 3003 Bern</li>
           </ul>
 
-          <h2>7. Datensicherheit</h2>
+          <h2>8. Datensicherheit</h2>
           <p>
             Diese Website wird ausschließlich verschlüsselt über HTTPS (TLS) ausgeliefert. Eine verschlüsselte Verbindung erkennen Sie an
             „https://“ in der Adresszeile und am Schloss-Symbol Ihres Browsers.

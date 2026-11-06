@@ -62,10 +62,10 @@ export default function ToolSearch({ tools }: { tools: SearchTool[] }) {
             router.push(results[active].path);
           } else if (e.key === "Escape") setOpen(false);
         }}
-        className="h-14 w-full rounded-2xl border border-zinc-300 bg-white pl-12 pr-4 text-base text-zinc-900 shadow-sm placeholder:text-zinc-500 focus:border-lime-700 focus:outline-none focus:ring-4 focus:ring-lime-700/15"
+        className="h-14 w-full rounded-xl border border-zinc-300 bg-white pl-12 pr-4 text-base text-zinc-900 placeholder:text-zinc-500 focus:border-lime-700 focus:outline-none"
       />
       {open && (
-        <ul id={`${id}-list`} role="listbox" className="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-zinc-200 bg-white py-1 shadow-xl">
+        <ul id={`${id}-list`} role="listbox" className="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-zinc-200 bg-white py-1">
           {results.length === 0 ? (
             <li className="px-4 py-3 text-sm text-zinc-600">Kein passendes Tool gefunden.</li>
           ) : (

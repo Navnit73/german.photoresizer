@@ -7,6 +7,7 @@ import { readExif, hasGps } from "@/lib/image/exif";
 import { formatBytes, formatDims, saveBlob, savingPercent, zipFiles } from "@/lib/image/files";
 import { createCanvas, getCtx, canvasToBlob, yieldToMain } from "@/lib/image/canvas";
 import { CompareSlider, Dropzone, ErrorBanner, btnPrimary, btnSecondary } from "./ui";
+import { errorCode, track } from "@/lib/track";
 
 export interface SourceInfo {
   file: File;
@@ -173,6 +174,7 @@ export default function BatchTool({
         } catch (err) {
           if (versionRef.current !== version) continue;
           const msg = err instanceof Error && err.message !== "cancelled" ? err.message : "Die Datei konnte nicht verarbeitet werden.";
+          track("error", { code: errorCode(err) });
           patch(next.id, { status: "error", version, error: msg });
         }
       }
@@ -228,6 +230,7 @@ export default function BatchTool({
       if (rejected > 0) setNotice(rejectMessage);
       else if (files.length > room) setNotice(`Es wurden nur die ersten ${room} Dateien übernommen (maximal ${maxFiles}).`);
       if (accepted.length === 0) return;
+      track("upload", { count: accepted.length });
       commit((prev) => [...prev, ...accepted]);
       setSelected((s) => s ?? accepted[0].id);
       void run();
@@ -262,11 +265,17 @@ export default function BatchTool({
 
   const current = items.find((i) => i.id === selected) ?? items[0];
 
+  const downloadOne = (r: ProcessResult) => {
+    saveBlob(r.blob, r.filename);
+    track("download", { kind: "single", format: r.blob.type.replace("image/", "") });
+  };
+
   const downloadZip = async () => {
     setZipping(true);
     try {
       const blob = await zipFiles(done.map((i) => ({ name: i.result!.filename, blob: i.result!.blob })));
       saveBlob(blob, "fotowerkzeuge-bilder.zip");
+      track("download", { kind: "zip", count: done.length });
     } finally {
       setZipping(false);
     }
@@ -274,7 +283,7 @@ export default function BatchTool({
 
   if (items.length === 0) {
     return (
-      <div className="rounded-3xl border border-zinc-200 bg-white p-3 shadow-sm sm:p-4">
+      <div>
         <Dropzone onFiles={addFiles} accept={accept} title={dropTitle} formats={dropFormats} />
         {notice && (
           <div className="mt-3">
@@ -286,12 +295,12 @@ export default function BatchTool({
   }
 
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-3 shadow-sm sm:p-4">
+    <div>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         {/* Preview + list */}
         <div className="min-w-0 space-y-3">
           {current && (
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-2">
+            <div className="rounded-xl bg-zinc-100 p-2">
               {current.previewUrl ? (
                 <CompareSlider
                   before={current.previewUrl}
@@ -320,7 +329,7 @@ export default function BatchTool({
             </div>
           )}
 
-          <ul className="divide-y divide-zinc-100 overflow-hidden rounded-2xl border border-zinc-200" aria-label="Ausgewählte Dateien">
+          <ul className="divide-y divide-zinc-100 overflow-hidden rounded-xl border border-zinc-200" aria-label="Ausgewählte Dateien">
             {items.map((it) => {
               const isSel = it.id === current?.id;
               const saving = it.result ? savingPercent(it.file.size, it.result.blob.size) : 0;
@@ -361,7 +370,7 @@ export default function BatchTool({
                     <Loader2 aria-label="Wird verarbeitet" className="h-4 w-4 shrink-0 animate-spin text-lime-700" />
                   ) : it.result ? (
                     <span
-                      className={`hidden shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold sm:inline ${
+                      className={`hidden shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold sm:inline ${
                         saving > 0 ? "bg-lime-100 text-lime-900" : "bg-zinc-100 text-zinc-700"
                       }`}
                     >
@@ -371,7 +380,7 @@ export default function BatchTool({
                   {it.result && (
                     <button
                       type="button"
-                      onClick={() => saveBlob(it.result!.blob, it.result!.filename)}
+                      onClick={() => downloadOne(it.result!)}
                       className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lime-800 hover:bg-lime-50"
                       aria-label={`${it.result.filename} herunterladen`}
                     >
@@ -397,7 +406,7 @@ export default function BatchTool({
         {/* Settings + download */}
         <aside className="space-y-3 lg:sticky lg:top-20 lg:self-start">
           {settings}
-          <div className="space-y-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+          <div className="space-y-3 border-t border-zinc-200 pt-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-zinc-700">
                 {done.length} von {items.length} fertig
@@ -428,7 +437,7 @@ export default function BatchTool({
                 type="button"
                 className={`${btnPrimary} w-full`}
                 disabled={!current?.result || busy}
-                onClick={() => current?.result && saveBlob(current.result.blob, current.result.filename)}
+                onClick={() => current?.result && downloadOne(current.result!)}
               >
                 <Download aria-hidden className="h-4 w-4" />
                 Herunterladen
@@ -439,7 +448,7 @@ export default function BatchTool({
                 <RotateCcw aria-hidden className="h-4 w-4" /> Neu starten
               </button>
               {done.length > 1 && current?.result && (
-                <button type="button" className={`${btnSecondary} flex-1`} onClick={() => saveBlob(current.result!.blob, current.result!.filename)}>
+                <button type="button" className={`${btnSecondary} flex-1`} onClick={() => downloadOne(current.result!)}>
                   <Download aria-hidden className="h-4 w-4" /> Nur Auswahl
                 </button>
               )}

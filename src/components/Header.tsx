@@ -15,13 +15,13 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-zinc-200 bg-white/95 backdrop-blur-md">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:shadow"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:rounded-lg focus:border focus:border-zinc-300 focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold"
       >
         Zum Inhalt springen
       </a>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="group flex items-center gap-2.5" aria-label={`${SITE_NAME} – Startseite`}>
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-lime-700 text-white shadow-sm transition-transform group-hover:scale-105">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-lime-700 text-white transition-transform group-hover:scale-105">
             <ImageIcon aria-hidden className="h-5 w-5" />
           </span>
           <span className="flex flex-col leading-none">

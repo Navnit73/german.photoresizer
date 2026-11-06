@@ -3,11 +3,10 @@ import Link from "next/link";
 import { ArrowRight, Check, GraduationCap, Laptop, Lock, ShieldCheck, ShoppingBag, Smartphone, Sparkles, User, Ban } from "lucide-react";
 import PhotoEditor from "@/components/PhotoEditor";
 import ToolDirectory from "@/components/ToolDirectory";
-import ToolSearch, { type SearchTool } from "@/components/ToolSearch";
 import Faq from "@/components/site/Faq";
 import JsonLd from "@/components/site/JsonLd";
 import ToolLink from "@/components/site/ToolLink";
-import { LIVE_TOOLS, liveTools } from "@/lib/tools";
+import { LIVE_TOOLS } from "@/lib/tools";
 import {
   buildMetadata,
   faqSchema,
@@ -26,20 +25,7 @@ const DESCRIPTION =
 export const metadata: Metadata = buildMetadata({ title: TITLE, description: DESCRIPTION, path: "/" });
 
 /** Extra search terms for the hero search (synonyms users type). */
-const SEARCH_TERMS: Record<string, string> = {
-  P1: "kleiner machen resize pixel verkleinern foto minimieren",
-  P2: "dateigröße reduzieren kb mb speicher komprimieren",
-  P3: "jpeg jpg qualität exif komprimieren",
-  P4: "png transparenz verkleinern",
-  P5: "gif animation verkleinern",
-  P21: "pixel skalieren breite höhe bildgröße auflösung",
-  P27: "heic heif iphone jpg konvertieren umwandeln",
-  P40: "hintergrund entfernen transparent ki freistellen",
-  P41: "freistellen ausschneiden objekt lasso",
-  P51: "zuschneiden beschneiden crop ausschnitt",
-};
 
-const HERO_SHORTCUTS = ["P1", "P2", "P40", "P27", "P51", "P21"];
 
 const FAQS: FaqItem[] = [
   {
@@ -69,8 +55,6 @@ const FAQS: FaqItem[] = [
 ];
 
 export default function HomePage() {
-  const searchTools: SearchTool[] = LIVE_TOOLS.map((t) => ({ name: t.name, path: t.path, desc: t.desc, keywords: SEARCH_TERMS[t.id] ?? "" }));
-  const shortcuts = liveTools(HERO_SHORTCUTS);
 
   return (
     <main id="main" className="flex-1 bg-white">
@@ -85,10 +69,10 @@ export default function HomePage() {
       />
 
       {/* Hero */}
-      <section className="relative border-b border-zinc-200 bg-[radial-gradient(ellipse_at_top,_#f7fee7_0%,_#fafafa_45%,_#fafafa_100%)]">
+      <section className="relative border-b border-zinc-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 pb-10 pt-8 sm:px-6 sm:pt-12 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="inline-flex items-center gap-2 rounded-full border border-lime-700/25 bg-white px-3.5 py-1 text-xs font-semibold text-lime-900">
+            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-lime-800">
               <Sparkles aria-hidden className="h-3.5 w-3.5 text-lime-700" />
               Kostenlos · ohne Anmeldung · ohne Wasserzeichen
             </p>
@@ -99,23 +83,6 @@ export default function HomePage() {
               Bilder kostenlos bearbeiten, direkt im Browser: verkleinern, komprimieren, zuschneiden oder den Hintergrund entfernen.
               Ihre Bilder bleiben dabei auf Ihrem Gerät.
             </p>
-            <div className="mt-5 sm:mt-6">
-              <ToolSearch tools={searchTools} />
-            </div>
-            <nav
-              aria-label="Beliebte Werkzeuge"
-              className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0"
-            >
-              {shortcuts.map((t) => (
-                <Link
-                  key={t.id}
-                  href={t.path}
-                  className="inline-flex min-h-10 shrink-0 items-center rounded-full border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-800 shadow-sm transition-colors hover:border-lime-700 hover:text-lime-800"
-                >
-                  {t.name}
-                </Link>
-              ))}
-            </nav>
           </div>
 
           <div className="mx-auto mt-8 max-w-6xl">
@@ -157,7 +124,7 @@ export default function HomePage() {
             Moderne Browser können Bilder selbst berechnen. Deshalb brauchen Sie weder ein Programm noch ein Konto – drei Schritte
             genügen.
           </p>
-          <ol className="mt-10 grid gap-4 md:grid-cols-3">
+          <ol className="mt-10 grid gap-x-10 gap-y-8 md:grid-cols-3">
             {[
               {
                 h: "1. Tool auswählen",
@@ -172,7 +139,7 @@ export default function HomePage() {
                 p: "Passen Sie die Einstellungen an und speichern Sie das Ergebnis. Mehrere Dateien fassen die Stapel-Tools auf Wunsch in einem ZIP-Archiv zusammen.",
               },
             ].map((s) => (
-              <li key={s.h} className="rounded-2xl border border-zinc-200 bg-white p-6">
+              <li key={s.h} className="border-t-2 border-lime-700 pt-5">
                 <h3 className="text-lg font-bold text-zinc-950">{s.h}</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-zinc-700">{s.p}</p>
               </li>
@@ -187,7 +154,7 @@ export default function HomePage() {
           <h2 id="why-heading" className="max-w-3xl text-3xl font-extrabold tracking-tight text-zinc-950">
             Warum unsere Foto-Tools?
           </h2>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 icon: Ban,
@@ -210,10 +177,8 @@ export default function HomePage() {
                 p: "Die Oberfläche passt sich jedem Bildschirm an und lässt sich per Maus, Tastatur oder Touch bedienen – unter Windows, macOS, iOS und Android.",
               },
             ].map(({ icon: Icon, h, p }) => (
-              <div key={h} className="rounded-2xl border border-zinc-200 bg-white p-6">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-lime-50 text-lime-800">
-                  <Icon aria-hidden className="h-5 w-5" />
-                </span>
+              <div key={h} className="border-t border-zinc-200 pt-5">
+                <Icon aria-hidden className="h-6 w-6 text-lime-700" />
                 <h3 className="mt-4 text-base font-bold text-zinc-950">{h}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-zinc-700">{p}</p>
               </div>
@@ -228,8 +193,8 @@ export default function HomePage() {
           <h2 id="audience-heading" className="max-w-3xl text-3xl font-extrabold tracking-tight text-zinc-950">
             Für wen eignen sich die Tools?
           </h2>
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+          <div className="mt-10 grid gap-x-10 gap-y-8 md:grid-cols-3">
+            <div className="border-t border-zinc-200 pt-5">
               <User aria-hidden className="h-6 w-6 text-lime-700" />
               <h3 className="mt-3 text-lg font-bold text-zinc-950">Privatpersonen</h3>
               <p className="mt-2 text-[15px] leading-relaxed text-zinc-700">
@@ -240,7 +205,7 @@ export default function HomePage() {
                 <ToolLink id="P27" /> · <ToolLink id="P1" />
               </p>
             </div>
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+            <div className="border-t border-zinc-200 pt-5">
               <ShoppingBag aria-hidden className="h-6 w-6 text-lime-700" />
               <h3 className="mt-3 text-lg font-bold text-zinc-950">Onlineshops und Selbstständige</h3>
               <p className="mt-2 text-[15px] leading-relaxed text-zinc-700">
@@ -251,7 +216,7 @@ export default function HomePage() {
                 <ToolLink id="P40" /> · <ToolLink id="P2" />
               </p>
             </div>
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+            <div className="border-t border-zinc-200 pt-5">
               <GraduationCap aria-hidden className="h-6 w-6 text-lime-700" />
               <h3 className="mt-3 text-lg font-bold text-zinc-950">Schulen, Vereine und Behördenkontakte</h3>
               <p className="mt-2 text-[15px] leading-relaxed text-zinc-700">
@@ -276,8 +241,8 @@ export default function HomePage() {
             Kostenlose Bildbearbeitung gibt es in drei Varianten. Welche passt, hängt davon ab, wie oft und wie aufwendig Sie Bilder
             bearbeiten.
           </p>
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            <div className="rounded-2xl border-2 border-lime-700/50 bg-lime-50/40 p-6">
+          <div className="mt-10 grid gap-x-10 gap-y-8 md:grid-cols-3">
+            <div className="border-t-2 border-lime-700 pt-5">
               <h3 className="text-lg font-bold text-zinc-950">Online-Tool ohne Installation</h3>
               <p className="mt-2 text-[15px] leading-relaxed text-zinc-700">
                 Ideal für klar umrissene Aufgaben wie Verkleinern, Komprimieren, Zuschneiden oder Umwandeln. Bildbearbeitung online kostenlos,
@@ -291,14 +256,14 @@ export default function HomePage() {
                 ))}
               </ul>
             </div>
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+            <div className="border-t border-zinc-200 pt-5">
               <h3 className="text-lg font-bold text-zinc-950">Kostenlose Bildbearbeitungsprogramme</h3>
               <p className="mt-2 text-[15px] leading-relaxed text-zinc-700">
                 Desktop-Programme wie GIMP oder Paint.NET bieten Ebenen, Masken und komplexe Retusche. Dafür brauchen sie eine Installation und
                 etwas Einarbeitung. Ein Vergleich folgt im Ratgeber <ToolLink id="P68" />.
               </p>
             </div>
-            <div className="rounded-2xl border border-zinc-200 bg-white p-6">
+            <div className="border-t border-zinc-200 pt-5">
               <Smartphone aria-hidden className="h-6 w-6 text-lime-700" />
               <h3 className="mt-3 text-lg font-bold text-zinc-950">Bildbearbeitungs-Apps fürs Handy</h3>
               <p className="mt-2 text-[15px] leading-relaxed text-zinc-700">
@@ -308,7 +273,7 @@ export default function HomePage() {
             </div>
           </div>
           <p className="mt-8">
-            <Link href="#editor" className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-lime-700 px-5 text-sm font-semibold text-white hover:bg-lime-800">
+            <Link href="#editor" className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-lime-700 px-5 text-sm font-semibold text-white hover:bg-lime-800">
               Jetzt Bilder kostenlos bearbeiten <ArrowRight aria-hidden className="h-4 w-4" />
             </Link>
           </p>

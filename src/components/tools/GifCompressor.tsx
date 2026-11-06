@@ -3,19 +3,8 @@
 import { useCallback, useState } from "react";
 import BatchTool, { type SourceInfo } from "./BatchTool";
 import { Panel, Segmented, Slider } from "./ui";
-import { decodeGif, encodeGif, type DecodedGif } from "@/lib/image/gif";
+import { gifInWorker } from "@/lib/image/workerClient";
 import { baseName } from "@/lib/image/files";
-
-const decodedCache = new WeakMap<File, Promise<DecodedGif>>();
-function decodeCached(file: File) {
-  let p = decodedCache.get(file);
-  if (!p) {
-    p = file.arrayBuffer().then(decodeGif);
-    decodedCache.set(file, p);
-    p.catch(() => decodedCache.delete(file));
-  }
-  return p;
-}
 
 export default function GifCompressor() {
   const [colors, setColors] = useState(128);
@@ -25,10 +14,9 @@ export default function GifCompressor() {
 
   const process = useCallback(
     async (src: SourceInfo, isStale: () => boolean) => {
-      const gif = await decodeCached(src.file);
-      const out = await encodeGif(gif, { colors, frameStep, scale: scale / 100, tolerance }, undefined, isStale);
+      const out = await gifInWorker(src.file, { colors, frameStep, scale: scale / 100, tolerance }, isStale);
       const blob = new Blob([out.bytes as Uint8Array<ArrayBuffer>], { type: "image/gif" });
-      const frames = gif.frames.length;
+      const frames = out.sourceFrames;
       return {
         blob,
         width: out.width,

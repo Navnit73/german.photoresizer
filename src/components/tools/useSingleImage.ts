@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { decodeImage, sniffType, type DecodedImage, type SniffedType } from "@/lib/image/decode";
+import { errorCode, track } from "@/lib/track";
 
 export interface LoadedImage extends DecodedImage {
   file: File;
@@ -29,7 +30,9 @@ export function useSingleImage(accept: SniffedType[], rejectMessage: string) {
         const next = { ...dec, file };
         current.current = next;
         setImage(next);
+        track("upload", { count: 1 });
       } catch (e) {
+        track("error", { code: errorCode(e) });
         setError(e instanceof Error ? e.message : "Die Datei konnte nicht geöffnet werden.");
       } finally {
         setLoading(false);

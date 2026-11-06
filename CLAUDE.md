@@ -145,6 +145,9 @@ Every tool page follows this exact layout order:
 - **FAQ:** one `FaqItem[]` array feeds both the visible FAQ and the FAQPage JSON-LD — never maintain FAQ text twice.
 - **Headings:** if a plan puts an H4 directly under an H2, use H3 instead (no skipped levels).
 - **Tool widgets** live in `src/components/tools/`. Reuse the engine: `BatchTool` (multi-file, compare, ZIP), `CropStage`, `CutoutEditor`, and `src/lib/image/*` (decode incl. HEIC, resize, MozJPEG/OxiPNG/WebP encoders, EXIF, GIF, AI segmentation). All processing stays in the browser — never upload user images.
+- **Performance:** heavy pixel work goes through `encodePixels()` / `gifInWorker()` (Web Worker). Modules imported by `src/lib/image/image.worker.ts` must never import `encode.ts` or `workerClient.ts`, and never import the root `@jsquash/oxipng` package — both patterns hang the Turbopack build.
+- **Privacy:** no third-party requests from the browser. AI models and the ONNX runtime are self-hosted (`scripts/fetch-ai-assets.mjs`, runs as predev/prebuild). Don't add external scripts, fonts or CDNs.
+- **Usage events:** call `track("upload" | "download" | "error", {...})` from `src/lib/track.ts` in new tools — never send file names or image data. New event names/props must be whitelisted in `src/app/api/event/route.ts`.
 - **Honesty:** page copy may only describe features the widget actually has. If a plan FAQ answer would be false for the implementation, rephrase it truthfully.
 - **Design:** follow `DESIGN.md` (white / lime-700 / zinc only), touch targets ≥ 44 px, no `text-zinc-400` for readable text.
 

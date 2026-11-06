@@ -14,7 +14,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.2fr_2fr]">
           <div>
             <Link href="/" className="inline-flex items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-lime-700 text-white shadow-sm">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-lime-700 text-white">
                 <ImageIcon aria-hidden className="h-4 w-4" />
               </span>
               <span className="text-lg font-bold tracking-tight text-zinc-950">
@@ -44,8 +44,13 @@ export default function Footer() {
               </div>
             ))}
             <div>
-              <p className="text-sm font-semibold text-zinc-900">Rechtliches</p>
+              <p className="text-sm font-semibold text-zinc-900">Über das Projekt</p>
               <ul className="mt-2">
+                <li>
+                  <Link href="/ueber-uns/" className="inline-flex min-h-10 items-center text-sm text-zinc-600 hover:text-lime-800">
+                    Über uns
+                  </Link>
+                </li>
                 <li>
                   <Link href="/impressum/" className="inline-flex min-h-10 items-center text-sm text-zinc-600 hover:text-lime-800">
                     Impressum

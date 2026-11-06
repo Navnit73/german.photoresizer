@@ -1,5 +1,6 @@
 "use client";
 
+import { errorCode, track } from "@/lib/track";
 import { useMemo, useState } from "react";
 import { Download, FlipHorizontal2, FlipVertical2, Loader2, RotateCcw, RotateCw, ScanLine, Undo2, ImagePlus } from "lucide-react";
 import CropStage from "./CropStage";
@@ -124,7 +125,9 @@ export default function CropTool() {
       const blob = finishBlob(data, outFormat, null, "strip");
       setLastSize(blob.size);
       saveBlob(blob, outputName(image.file.name, outFormat, "-zugeschnitten"));
+      track("download", { kind: "single", format: outFormat });
     } catch (e) {
+      track("error", { code: errorCode(e) });
       setError(e instanceof Error ? e.message : "Export fehlgeschlagen.");
     } finally {
       setExporting(false);
@@ -133,7 +136,7 @@ export default function CropTool() {
 
   if (!image) {
     return (
-      <div className="rounded-3xl border border-zinc-200 bg-white p-3 shadow-sm sm:p-4">
+      <div>
         {loading ? (
           <div className="flex min-h-64 items-center justify-center text-sm text-zinc-700">
             <Loader2 aria-hidden className="mr-2 h-5 w-5 animate-spin text-lime-700" /> Bild wird geöffnet …
@@ -154,7 +157,7 @@ export default function CropTool() {
   const cropOrigH = Math.round(crop.h * scaleToOriginal);
 
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-3 shadow-sm sm:p-4">
+    <div>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -192,7 +195,7 @@ export default function CropTool() {
               </button>
             </div>
           </div>
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-100 p-3 sm:p-5">
+          <div className="rounded-xl bg-zinc-100 p-3 sm:p-5">
             <CropStage source={image.bitmap} width={image.width} height={image.height} transform={t} crop={crop} onCrop={setCrop} ratio={ratio} grid={grid} />
           </div>
           <p className="text-center text-sm text-zinc-700">
@@ -234,7 +237,7 @@ export default function CropTool() {
             </div>
             {unit === "cm" && <NumberField label="Auflösung" suffix="dpi" value={dpi} min={72} max={1200} onChange={setDpi} />}
           </Panel>
-          <div className="space-y-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+          <div className="space-y-3 border-t border-zinc-200 pt-4">
             <Segmented
               label="Format"
               value={format}

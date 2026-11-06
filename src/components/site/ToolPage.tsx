@@ -58,7 +58,7 @@ export default function ToolPage({
       />
 
       {/* Above the fold: breadcrumb, H1, value proposition, tool */}
-      <section className="border-b border-zinc-200 bg-zinc-50/80">
+      <section className="border-b border-zinc-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 pb-8 pt-4 sm:px-6 sm:pb-10 sm:pt-6 lg:px-8">
           <Breadcrumbs crumbs={crumbs} />
           <h1 className="mt-3 text-[1.7rem] font-extrabold leading-tight tracking-tight text-zinc-950 sm:text-4xl">
@@ -84,14 +84,14 @@ export default function ToolPage({
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <RelatedTools ids={related} />
 
-        <div className="mt-12 flex flex-col items-start justify-between gap-4 rounded-2xl bg-zinc-950 p-6 sm:flex-row sm:items-center sm:p-8">
+        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-zinc-200 pt-8 sm:flex-row sm:items-center">
           <div>
-            <p className="text-lg font-bold text-white">{tool.name} – direkt loslegen</p>
-            <p className="mt-1 text-sm text-zinc-300">Kostenlos, ohne Anmeldung, Verarbeitung lokal in Ihrem Browser.</p>
+            <p className="text-lg font-bold text-zinc-950">{tool.name} – direkt loslegen</p>
+            <p className="mt-1 text-sm text-zinc-600">Kostenlos, ohne Anmeldung, Verarbeitung lokal in Ihrem Browser.</p>
           </div>
           <Link
             href="#tool"
-            className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-lime-600 px-5 text-sm font-semibold text-zinc-950 transition-colors hover:bg-lime-500"
+            className="inline-flex min-h-12 items-center gap-2 rounded-lg bg-lime-700 px-5 text-sm font-semibold text-white transition-colors hover:bg-lime-800"
           >
             <Upload aria-hidden className="h-4 w-4" />
             Jetzt Bild hochladen

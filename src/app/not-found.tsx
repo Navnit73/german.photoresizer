@@ -16,10 +16,10 @@ export default function NotFound() {
         <p className="mt-4 text-base leading-relaxed text-zinc-700">
           Vielleicht hat sich die Adresse geändert. Hier finden Sie alle verfügbaren Foto-Tools:
         </p>
-        <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+        <ul className="mt-6 grid gap-x-8 sm:grid-cols-2">
           {LIVE_TOOLS.map((t) => (
             <li key={t.id}>
-              <Link href={t.path} className="flex min-h-12 items-center rounded-xl border border-zinc-200 px-4 text-sm font-medium text-zinc-900 hover:border-lime-700 hover:text-lime-800">
+              <Link href={t.path} className="flex min-h-12 items-center border-b border-zinc-200 text-sm font-medium text-zinc-900 hover:border-lime-700 hover:text-lime-800">
                 {t.name}
               </Link>
             </li>

@@ -231,4 +231,4 @@
 | 2026-11-06 | Full audit (docs/audit/2026-11-06-audit-and-plan.md); rebuilt homepage, header/footer, editor (Fabric.js removed); added sitemap, robots, manifest, OG image, 404; `live` flag registry in `src/lib/tools.ts` | all |
 | 2026-11-06 | Batch 1 live: P3, P2, P1, P40, P27 | `/jpg-komprimieren/`, `/bilder-komprimieren/`, `/bild-verkleinern/`, `/hintergrund-entfernen/`, `/heic-in-jpg/` |
 | 2026-11-06 | Batch 2 live: P51, P21, P4, P5, P41 | `/bild-zuschneiden/`, `/bildgroesse-aendern/`, `/png-komprimieren/`, `/gif-komprimieren/`, `/bild-freistellen/` |
-
+| 2026-11-06 | Web Worker processing, self-hosted AI models (no third-party requests), zoom in cut-out editor, cookieless usage events (/api/event), new page `/ueber-uns/` | `/ueber-uns/` + all tools |

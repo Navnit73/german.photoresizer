@@ -15,13 +15,13 @@ export default function OpengraphImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "72px",
-          background: "linear-gradient(135deg, #ffffff 0%, #f7fee7 100%)",
+          background: "#ffffff",
           color: "#09090b",
           fontFamily: "sans-serif",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <div style={{ width: 72, height: 72, borderRadius: 18, background: "#4d7c0f", display: "flex" }} />
+          <div style={{ width: 72, height: 72, borderRadius: 10, background: "#4d7c0f", display: "flex" }} />
           <div style={{ fontSize: 40, fontWeight: 700, display: "flex" }}>
             Foto<span style={{ color: "#4d7c0f" }}>Werkzeuge</span>
           </div>

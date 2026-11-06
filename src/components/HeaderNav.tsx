@@ -64,7 +64,7 @@ export default function HeaderNav({ groups }: { groups: NavGroup[] }) {
           {toolsOpen && (
             <div
               id="tools-menu"
-              className="absolute right-0 top-full mt-2 grid w-[min(92vw,640px)] grid-cols-2 gap-x-6 gap-y-5 rounded-2xl border border-zinc-200 bg-white p-5 shadow-xl"
+              className="absolute right-0 top-full mt-2 grid w-[min(92vw,640px)] grid-cols-2 gap-x-6 gap-y-5 rounded-xl border border-zinc-200 bg-white p-5"
             >
               {groups.map((g) => (
                 <div key={g.label}>
@@ -96,7 +96,7 @@ export default function HeaderNav({ groups }: { groups: NavGroup[] }) {
         <Link href="/#anleitung" className={linkCls}>
           So funktioniert&apos;s
         </Link>
-        <span className="ml-2 hidden items-center gap-1.5 rounded-full border border-lime-700/20 bg-lime-50 px-3 py-1 text-xs font-semibold text-lime-900 lg:inline-flex">
+        <span className="ml-2 hidden items-center gap-1.5 px-1 py-1 text-xs font-semibold text-lime-900 lg:inline-flex">
           <ShieldCheck aria-hidden className="h-3.5 w-3.5 text-lime-700" />
           Verarbeitung im Browser
         </span>

@@ -1,8 +1,11 @@
 /**
  * Local AI background segmentation via transformers.js (ONNX Runtime Web).
- * The photo never leaves the device. Model weights are fetched once from
- * Hugging Face (or NEXT_PUBLIC_MODEL_HOST if self-hosted) and cached by the
- * browser; the ONNX runtime WASM is fetched from jsDelivr by default.
+ * The photo never leaves the device. Everything is self-hosted – no
+ * third-party requests:
+ *  - model files: /models/<id>/… (public/models, see scripts/fetch-ai-assets.mjs)
+ *    or NEXT_PUBLIC_MODEL_HOST (your own CDN/bucket, same folder layout)
+ *  - ONNX Runtime WASM: /vendor/ort/ (public/vendor/ort)
+ * Files are cached by the browser after the first use.
  */
 
 export type SegmentModel = "portrait" | "object";
@@ -37,9 +40,20 @@ export function loadSegmenter(model: SegmentModel, onProgress?: (p: LoadProgress
   if (existing) return existing;
   const p = (async () => {
     const tf = await import("@huggingface/transformers");
-    tf.env.allowLocalModels = false;
     const host = process.env.NEXT_PUBLIC_MODEL_HOST;
-    if (host) tf.env.remoteHost = host;
+    if (host) {
+      // Own CDN with the same layout as public/models: <host>/<model id>/<file>
+      tf.env.allowLocalModels = false;
+      tf.env.allowRemoteModels = true;
+      tf.env.remoteHost = host.endsWith("/") ? host : `${host}/`;
+      tf.env.remotePathTemplate = "{model}/";
+    } else {
+      tf.env.allowLocalModels = true;
+      tf.env.allowRemoteModels = false; // never fall back to huggingface.co
+      tf.env.localModelPath = "/models/";
+    }
+    const onnx = tf.env.backends.onnx as { wasm?: { wasmPaths?: string } };
+    if (onnx.wasm) onnx.wasm.wasmPaths = "/vendor/ort/";
     const device = (await hasWebGPU()) ? "webgpu" : "wasm";
     const files = new Map<string, { loaded: number; total: number }>();
     const pipe = await tf.pipeline("background-removal", MODELS[model].id, {

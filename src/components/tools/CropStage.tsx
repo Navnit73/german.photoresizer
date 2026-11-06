@@ -108,7 +108,7 @@ export default function CropStage({
             <canvas ref={canvasRef} className="bg-transparency-grid block h-full w-full" style={{ filter: cssFilter }} />
             <div
               className="pointer-events-none absolute"
-              style={{ left: crop.x * k, top: crop.y * k, width: crop.w * k, height: crop.h * k, boxShadow: "0 0 0 9999px rgba(9, 9, 11, 0.55)" }}
+              style={{ left: crop.x * k, top: crop.y * k, width: crop.w * k, height: crop.h * k, outline: "9999px solid rgba(9, 9, 11, 0.55)" }}
             />
           </div>
           <div
@@ -118,7 +118,7 @@ export default function CropStage({
             onKeyDown={onKey}
             data-handle="move"
             onPointerDown={onDown}
-            className="absolute cursor-move outline-none focus-visible:ring-2 focus-visible:ring-lime-500"
+            className="absolute cursor-move focus-visible:outline-3! focus-visible:outline-lime-500!"
             style={{
               left: crop.x * k,
               top: crop.y * k,
@@ -143,7 +143,7 @@ export default function CropStage({
                 className={`absolute flex h-11 w-11 items-center justify-center ${POS[h]}`}
                 aria-hidden
               >
-                <span className={`block border-2 border-white bg-lime-700 shadow ${h.length === 2 ? "h-4 w-4 rounded-full" : "h-2.5 w-6 rounded-full " + (h === "e" || h === "w" ? "rotate-90" : "")}`} />
+                <span className={`block border-2 border-white bg-lime-700 ${h.length === 2 ? "h-4 w-4 rounded-full" : "h-2.5 w-6 rounded-full " + (h === "e" || h === "w" ? "rotate-90" : "")}`} />
               </div>
             ))}
           </div>

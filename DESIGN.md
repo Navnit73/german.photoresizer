@@ -3,6 +3,12 @@
 > **Strict Color & Theme Policy:**
 > - **Theme:** **Permanent Pure White / Light Theme only**. No dark mode.
 > - **Colors:** Exclusively **White** (`#ffffff`), **Lime 700** (`#4d7c0f`), **Grey (Zinc/Neutral scale)**, and **Black** for crisp text. No other accent hues (blue, purple, orange, etc.) are permitted.
+>
+> **Flat UI Policy (mandatory):**
+> - **No shadows at all** — no box/drop/text shadows and no focus "rings" (they render as box-shadow). Use borders and outlines instead. All shadow theme tokens are disabled in `globals.css`.
+> - **No gradients** — solid fills only. (Only exception: the functional transparency checkerboard.)
+> - **Max radius 10 px** — `rounded-xl` is the largest allowed token (capped at 10 px in `globals.css`); no pill shapes on elements taller than 20 px.
+> - **Not card-heavy** — do not wrap content in bordered/rounded boxes, and never nest boxes. Structure content with whitespace, hairline rules (`border-t border-zinc-200`), a lime accent rule (`border-t-2 border-lime-700`) or a left accent bar (`border-l-2 border-lime-700`). Lists of links are rows divided by `border-b`, not tiles.
 
 ---
 
@@ -19,8 +25,8 @@
 - **Backgrounds:**
   - Page Background: **Pure White** (`#ffffff`).
   - Section Contrast Background: Light Warm Grey (`#f4f4f5` / `zinc-100`, `#fafafa` / `zinc-50`).
-- **Surfaces / Cards:**
-  - Card Surface: **Pure White** (`#ffffff`) with subtle border `zinc-200` (`#e4e4e7`).
+- **Surfaces:**
+  - Content sits directly on the page background; separate with `zinc-200` hairline rules, not boxes.
 - **Text Hierarchy:**
   - Primary Headlines: `zinc-950` (`#09090b`) / Black (`#000000`).
   - Body Text: `zinc-700` (`#3f3f46`) / `zinc-800` (`#27272a`).
@@ -43,8 +49,8 @@
 - Background: `bg-lime-700`
 - Hover: `hover:bg-lime-800`
 - Text: `text-white font-medium`
-- Border: `border border-lime-700 shadow-sm`
-- Radius: `rounded-lg` (or `rounded-full` for hero primary action)
+- Border: none (solid fill)
+- Radius: `rounded-lg`
 - Padding: `px-5 py-2.5` or `px-6 py-3.5` (large)
 
 ### 3.2 Secondary / Neutral Buttons
@@ -55,19 +61,18 @@
 
 ### 3.3 Inputs & Selects
 - Border: `border-zinc-300`
-- Focus: `focus:ring-2 focus:ring-lime-700 focus:border-lime-700 focus:outline-none`
+- Focus: `focus:border-lime-700` plus the global 2 px lime `:focus-visible` outline (no rings)
 - Background: `bg-white`
 - Text: `text-zinc-900`
 
-### 3.4 Feature Cards & Tool Tiles
-- Clean white card `bg-white`
-- Border `border border-zinc-200`
-- Subtle hover state: `hover:border-lime-700/60 hover:shadow-md transition-all`
-- Icon container: `bg-zinc-100 text-lime-700 p-2.5 rounded-lg`
+### 3.4 Feature Lists & Tool Links
+- No cards. Feature/step columns: `border-t border-zinc-200 pt-5` (highlighted: `border-t-2 border-lime-700`).
+- Tool link lists: rows `border-b border-zinc-200 py-4` inside a `border-t` container; hover changes text colour to `lime-800`.
+- Icons stand alone in `text-lime-700` — no icon background chips.
 
 ### 3.5 Editor & Tool Widgets (plain Canvas, no Fabric.js)
-- Widget card: `rounded-3xl border border-zinc-200 bg-white p-3 sm:p-4 shadow-sm`; stage left, settings panel right (`lg:grid-cols-[minmax(0,1fr)_340px]`), stacked on mobile.
-- Stage: `rounded-2xl border border-zinc-200 bg-zinc-100`; transparent images on `.bg-transparency-grid`.
+- No outer widget frame: stage left, settings right (`lg:grid-cols-[minmax(0,1fr)_340px]`), stacked on mobile. Settings sections (`Panel`) are separated by `border-t border-zinc-200 pt-4`.
+- Stage: `rounded-xl bg-zinc-100` (no border); transparent images on `.bg-transparency-grid`.
 - Controls from `src/components/tools/ui.tsx`: `Dropzone`, `Slider` (`.range`, 24 px thumb), `Segmented`, `Toggle`, `NumberField`, `CompareSlider`, `btnPrimary`/`btnSecondary`/`btnIcon` (≥ 44 px).
 - Preview must equal export: colour adjustments use CSS-filter formulas in preview and identical pixel math on export (`src/lib/image/filters.ts`).
 - Heavy code (WASM codecs, HEIC decoder, AI models) is loaded lazily on first use only.
